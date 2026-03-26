@@ -10,11 +10,12 @@ export async function createAngebot(formData: FormData) {
   const supabase = createClient(cookieStore)
 
   const title = formData.get('title') as string
+  const subtitle = formData.get('subtitle') as string
   if (!title?.trim()) {
     return { error: 'Title is required' }
   }
 
-  const { error } = await supabase.from('angebote').insert({ title: title.trim() })
+  const { error } = await supabase.from('angebote').insert({ title: title.trim(), subtitle: subtitle?.trim() || null })
 
   if (error) {
     return { error: error.message }
@@ -29,13 +30,14 @@ export async function updateAngebot(id: string, formData: FormData) {
   const supabase = createClient(cookieStore)
 
   const title = formData.get('title') as string
+  const subtitle = formData.get('subtitle') as string
   if (!title?.trim()) {
     return { error: 'Title is required' }
   }
 
   const { error } = await supabase
     .from('angebote')
-    .update({ title: title.trim() })
+    .update({ title: title.trim(), subtitle: subtitle?.trim() || null })
     .eq('id', id)
 
   if (error) {
@@ -44,6 +46,7 @@ export async function updateAngebot(id: string, formData: FormData) {
 
   revalidatePath(`/admin/angebote/${id}`)
   revalidatePath('/admin/angebote')
+  redirect(`/admin/angebote/${id}`)
 }
 
 export async function deleteAngebot(id: string) {

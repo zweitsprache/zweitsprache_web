@@ -37,7 +37,18 @@ export default async function AngebotDetailPage({
       >
         ← Zurück zu Angebote
       </a>
-      <h1 className="mb-6 text-2xl font-bold">{angebot.title}</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{angebot.title}</h1>
+        <a
+          href={`/admin/angebote/${id}/edit`}
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+        >
+          Bearbeiten
+        </a>
+      </div>
+      {angebot.subtitle && (
+        <p className="mb-6 -mt-4 text-sm text-zinc-500">{angebot.subtitle}</p>
+      )}
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Durchführungen</h2>

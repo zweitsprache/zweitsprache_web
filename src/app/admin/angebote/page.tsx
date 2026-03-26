@@ -21,7 +21,7 @@ export default async function AngebotePage() {
       <div className="flex flex-col gap-2">
         {angebote && angebote.length > 0 ? (
           angebote.map((angebot) => (
-            <AngebotRow key={angebot.id} id={angebot.id} title={angebot.title} />
+            <AngebotRow key={angebot.id} id={angebot.id} title={angebot.title} subtitle={angebot.subtitle} />
           ))
         ) : (
           <p className="text-sm text-zinc-500">Noch keine Angebote vorhanden.</p>

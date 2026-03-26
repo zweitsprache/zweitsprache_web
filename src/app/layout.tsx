@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Encode_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "./sidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const encodeSans = Encode_Sans({
+  variable: "--font-encode-sans",
   subsets: ["latin"],
 });
 
@@ -15,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Zweitsprache",
-  description: "Zweitsprache Dashboard",
+  description: "Zweitsprache – Angebote & Kurse",
 };
 
 export default function RootLayout({
@@ -26,12 +25,9 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${encodeSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex h-full min-h-screen">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto">{children}</main>
-      </body>
+      <body className="min-h-screen">{children}</body>
     </html>
   );
 }
