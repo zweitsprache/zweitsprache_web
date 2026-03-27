@@ -1,12 +1,12 @@
 drop view if exists durchfuehrungen_flat;
 
-create index if not exists idx_durchfuehrungen_angebot_id on durchfuehrungen(angebot_id);
+create index if not exists idx_durchfuehrungen_workshop_id on durchfuehrungen(workshop_id);
 create index if not exists idx_termine_durchfuehrung_id on termine(durchfuehrung_id);
 create index if not exists idx_termine_start_datetime on termine(start_datetime);
 
-create or replace view angebote_listing as
+create or replace view workshops_listing as
 select
-  a.id as angebot_id,
+  a.id as workshop_id,
   a.title,
   a.created_at,
   coalesce(stats.durchfuehrung_count, 0) as durchfuehrung_count,
@@ -14,7 +14,7 @@ select
   stats.next_end,
   coalesce(df.items, '[]'::json) as durchfuehrungen,
   coalesce(df.durchfuehrungen_html, '') as durchfuehrungen_html
-from angebote a
+from workshops a
 left join lateral (
   select
     count(distinct d.id)::int as durchfuehrung_count,
@@ -22,7 +22,7 @@ left join lateral (
     min(t.end_datetime) filter (where t.start_datetime >= now()) as next_end
   from durchfuehrungen d
   left join termine t on t.durchfuehrung_id = d.id
-  where d.angebot_id = a.id
+  where d.workshop_id = a.id
 ) stats on true
 left join lateral (
   select
@@ -50,7 +50,7 @@ left join lateral (
       order by start_datetime asc
       limit 1
     ) first_termin on true
-    where d.angebot_id = a.id
+    where d.workshop_id = a.id
     order by first_termin.start_datetime asc nulls last
   ) sub
 ) df on true
@@ -59,14 +59,14 @@ order by stats.next_start asc nulls last;
 create or replace view durchfuehrungen_listing as
 select
   d.id as durchfuehrung_id,
-  a.id as angebot_id,
-  a.title as angebot_title,
+  a.id as workshop_id,
+  a.title as workshop_title,
   d.created_at,
   t.next_start,
   t.next_end,
   t.termin_count
 from durchfuehrungen d
-join angebote a on a.id = d.angebot_id
+join workshops a on a.id = d.workshop_id
 left join lateral (
   select
     min(start_datetime) filter (where start_datetime >= now()) as next_start,
@@ -83,10 +83,10 @@ select
   t.start_datetime,
   t.end_datetime,
   d.id as durchfuehrung_id,
-  a.id as angebot_id,
-  a.title as angebot_title
+  a.id as workshop_id,
+  a.title as workshop_title
 from termine t
 join durchfuehrungen d on d.id = t.durchfuehrung_id
-join angebote a on a.id = d.angebot_id
+join workshops a on a.id = d.workshop_id
 where t.start_datetime >= now()
 order by t.start_datetime asc;

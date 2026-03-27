@@ -1,5 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# AI coding tool config directories (ignore all hidden dirs at root, except .agents)
+/.*
+!/.gitignore
+!/.agents
+
 # dependencies
 /node_modules
 /.pnp
@@ -39,41 +44,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# AI tool configs
-.adal/
-.agents/
-.augment/
-.claude/
-.codebuddy/
-.commandcode/
-.continue/
-.cortex/
-.crush/
-.factory/
-.goose/
-.iflow/
-.junie/
-.kilocode/
-.kiro/
-.kode/
-.mcpjam/
-.mux/
-.neovate/
-.openhands/
-.pi/
-.pochi/
-.qoder/
-.qwen/
-.roo/
-.trae/
-.vibe/
-.windsurf/
-.zencoder/
-skills/
-skills-lock.json
-AGENTS.md
-CLAUDE.md
-
-# Supabase local state
-supabase/.temp/

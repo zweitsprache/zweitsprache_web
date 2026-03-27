@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navItems = [
-  { href: '/admin/angebote', label: 'Angebote' },
+  { href: '/admin/workshops', label: 'Workshops' },
+  { href: '/admin/kurse', label: 'Kurse' },
+  { href: '/admin/seiten', label: 'Seiten' },
 ]
 
 export function Sidebar() {

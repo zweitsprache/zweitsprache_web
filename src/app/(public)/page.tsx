@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
-import { User } from "lucide-react";
+import Image from "next/image";
 
 const WEEKDAYS_DE = ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'];
 
@@ -26,8 +26,8 @@ export default async function HomePage() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: angebote } = await supabase
-    .from("angebote")
+  const { data: workshops } = await supabase
+    .from("workshops")
     .select(
       `
       id,
@@ -47,9 +47,9 @@ export default async function HomePage() {
     )
     .order("created_at", { ascending: false });
 
-  const sorted = (angebote ?? []).sort((a, b) => {
-    const getFirstStart = (ang: typeof a) => {
-      const starts = (ang.durchfuehrungen ?? [])
+  const sorted = (workshops ?? []).sort((a, b) => {
+    const getFirstStart = (ws: typeof a) => {
+      const starts = (ws.durchfuehrungen ?? [])
         .flatMap((df: { termine: { start_datetime: string }[] }) => df.termine ?? [])
         .map((t: { start_datetime: string }) => new Date(t.start_datetime).getTime())
         .filter((ts: number) => ts >= Date.now());
@@ -58,69 +58,178 @@ export default async function HomePage() {
     return getFirstStart(a) - getFirstStart(b);
   });
 
+  const { data: courses } = await supabase
+    .from("courses")
+    .select(
+      `
+      id,
+      title,
+      subtitle,
+      modules (
+        id,
+        lessons (id)
+      )
+    `
+    )
+    .eq("published", true)
+    .order("created_at", { ascending: false })
+    .limit(3);
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="mb-2 text-3xl font-bold">Angebote</h1>
-      <p className="mb-8 text-zinc-500">Unsere aktuellen Kurse und Weiterbildungen</p>
+    <div>
+      {/* Hero */}
+      <div className="mx-auto max-w-6xl px-4 pt-12">
+        <div className="relative h-80 overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800 sm:h-96">
+          <Image
+            src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
+            alt="DaZ einfach machen"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 flex flex-col items-start justify-center bg-black/60 p-8 sm:p-12">
+            <h1 className="text-4xl font-bold text-white sm:text-5xl">
+              DaZ einfach machen
+            </h1>
+            <p className="mt-4 text-2xl leading-snug text-zinc-200 sm:text-3xl sm:leading-snug">
+              Beratung, Weiterbildung und Fachcoaching<br /> für Organisationen, Teams und Kursleitende
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        {sorted.map((angebot) => {
-          const allTermine = (angebot.durchfuehrungen ?? [])
-            .flatMap((df: { termine: { start_datetime: string; end_datetime: string }[] }) => df.termine ?? [])
-            .sort(
-              (a: { start_datetime: string }, b: { start_datetime: string }) =>
-                new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
-            );
-          const upcoming = allTermine.filter(
-            (t: { start_datetime: string }) => new Date(t.start_datetime) >= new Date()
-          );
-          const nextTermin = upcoming[0] as { start_datetime: string; end_datetime: string } | undefined;
-          const dfCount = (angebot.durchfuehrungen ?? []).length;
-
-          return (
+      <div className="mx-auto max-w-6xl px-4 py-12">
+        {/* Nächste Workshops */}
+        <div className="mb-16">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Nächste Workshops</h2>
             <Link
-              key={angebot.id}
-              href={`/angebote/${angebot.id}`}
-              className="group rounded-lg border border-zinc-200 p-5 transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
+              href="/workshops"
+              className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="mb-1 text-lg font-semibold group-hover:underline">
-                    {angebot.title}
-                  </h2>
-                  {angebot.subtitle && (
-                    <p className="mb-2 text-sm text-zinc-500">{angebot.subtitle}</p>
-                  )}
-                </div>
-                <div className="flex gap-px pt-0.5">
-                  <User className="h-4 w-4 fill-zinc-300 text-zinc-300 dark:fill-zinc-600 dark:text-zinc-600" />
-                  <User className="h-4 w-4 fill-zinc-300 text-zinc-300 dark:fill-zinc-600 dark:text-zinc-600" />
-                  <User className="h-4 w-4 fill-zinc-300 text-zinc-300 dark:fill-zinc-600 dark:text-zinc-600" />
-                </div>
-              </div>
-              <div className="mb-3 flex h-40 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-                <svg className="h-10 w-10 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
-                </svg>
-              </div>
-              {nextTermin ? (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {formatDate(nextTermin.start_datetime)} |{" "}
-                  {formatTime(nextTermin.start_datetime)} –{" "}
-                  {formatTime(nextTermin.end_datetime)}
-                </p>
-              ) : (
-                <p className="text-sm text-zinc-400">Keine kommenden Termine</p>
-              )}
-              <p className="mt-2 text-xs text-zinc-400">
-                {dfCount} Durchführung{dfCount !== 1 ? "en" : ""}
-              </p>
-              <span className="mt-3 block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
-                Details
-              </span>
+              Alle Workshops →
             </Link>
-          );
-        })}
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {sorted.slice(0, 3).map((workshop) => {
+              const allTermine = (workshop.durchfuehrungen ?? [])
+                .flatMap((df: { termine: { start_datetime: string; end_datetime: string }[] }) => df.termine ?? [])
+                .sort(
+                  (a: { start_datetime: string }, b: { start_datetime: string }) =>
+                    new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()
+                );
+              const upcoming = allTermine.filter(
+                (t: { start_datetime: string }) => new Date(t.start_datetime) >= new Date()
+              );
+              const nextTermin = upcoming[0] as { start_datetime: string; end_datetime: string } | undefined;
+              const dfCount = (workshop.durchfuehrungen ?? []).length;
+
+              return (
+                <Link
+                  key={workshop.id}
+                  href={`/workshops/${workshop.id}`}
+                  className="group overflow-hidden rounded-lg border border-zinc-200 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                >
+                  <div className="relative h-48 bg-zinc-100 dark:bg-zinc-800">
+                    <Image
+                      src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
+                      alt={workshop.title}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4">
+                      <h3 className="text-lg font-semibold text-white group-hover:underline">
+                        {workshop.title}
+                      </h3>
+                      {workshop.subtitle && (
+                        <p className="mt-0.5 text-sm text-zinc-200">{workshop.subtitle}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    {nextTermin ? (
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        {formatDate(nextTermin.start_datetime)} |{" "}
+                        {formatTime(nextTermin.start_datetime)} –{" "}
+                        {formatTime(nextTermin.end_datetime)}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-zinc-400">Keine kommenden Termine</p>
+                    )}
+                    <p className="mt-2 text-xs text-zinc-400">
+                      {dfCount} Durchführung{dfCount !== 1 ? "en" : ""}
+                    </p>
+                    <span className="mt-3 block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+                      Details
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Neueste Online-Kurse */}
+        <div>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Neueste Online-Kurse</h2>
+            <Link
+              href="/kurse"
+              className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+            >
+              Alle Kurse →
+            </Link>
+          </div>
+
+          {(!courses || courses.length === 0) ? (
+            <p className="text-zinc-500">Noch keine Kurse verfügbar.</p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {courses.map((course) => {
+                const moduleCount = (course.modules ?? []).length;
+                const lessonCount = (course.modules ?? []).reduce(
+                  (sum: number, mod: { lessons: { id: string }[] }) =>
+                    sum + (mod.lessons ?? []).length,
+                  0
+                );
+
+                return (
+                  <Link
+                    key={course.id}
+                    href={`/kurse/${course.id}`}
+                    className="group overflow-hidden rounded-lg border border-zinc-200 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+                  >
+                    <div className="relative h-48 bg-zinc-100 dark:bg-zinc-800">
+                      <Image
+                        src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
+                        alt={course.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4">
+                        <h3 className="text-lg font-semibold text-white group-hover:underline">
+                          {course.title}
+                        </h3>
+                        {course.subtitle && (
+                          <p className="mt-0.5 text-sm text-zinc-200">{course.subtitle}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        {moduleCount} Modul{moduleCount !== 1 ? "e" : ""} · {lessonCount} Lektion
+                        {lessonCount !== 1 ? "en" : ""}
+                      </p>
+                      <span className="mt-3 block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+                        Kurs ansehen
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
