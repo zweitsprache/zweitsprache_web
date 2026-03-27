@@ -7,6 +7,8 @@ const navItems = [
   { href: '/admin/workshops', label: 'Workshops' },
   { href: '/admin/kurse', label: 'Kurse' },
   { href: '/admin/seiten', label: 'Seiten' },
+  { href: '/admin/satzbank', label: 'Satzbank' },
+  { href: '/admin/textgenerator', label: 'Textgenerator' },
 ]
 
 export function Sidebar() {
