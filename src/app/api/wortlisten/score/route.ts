@@ -4,8 +4,6 @@ import OpenAI from "openai";
 
 import { createClient } from "@/utils/supabase/server";
 
-const openai = new OpenAI();
-
 // Multi-anchor HF descriptions — 4 focused semantic clusters per Handlungsfeld.
 // Scoring: embed each anchor individually, take MAX cosine across anchors per HF.
 // This eliminates semantic bleed from co-embedding unrelated concepts.
@@ -368,6 +366,7 @@ export async function GET(request: Request) {
 
 // POST: embed words for a level and compute relevance scores against all 20 HF
 export async function POST(request: Request) {
+  const openai = new OpenAI();
   const { searchParams } = new URL(request.url);
   const level = searchParams.get("level");
 

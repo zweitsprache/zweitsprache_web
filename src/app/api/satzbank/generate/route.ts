@@ -5,9 +5,6 @@ import OpenAI from "openai";
 
 import { createClient } from "@/utils/supabase/server";
 
-const anthropic = new Anthropic();
-const openai = new OpenAI();
-
 const VALID_LEVELS = ["A1.1", "A1.2", "A2.1", "A2.2", "B1.1", "B1.2"];
 
 // --- Level-specific rules (cumulative) ---
@@ -384,6 +381,8 @@ Diese Sätze dienen AUSSCHLIESSLICH als Stilvorlage für Satzbau, Wortschatz und
 {{REFERENZSAETZE}}`;
 
 export async function POST(request: Request) {
+  const anthropic = new Anthropic();
+  const openai = new OpenAI();
   try {
     const { level, topic, region, textType, handlungsfeld } = (await request.json()) as {
       level: string;

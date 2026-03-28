@@ -4,8 +4,6 @@ import OpenAI from "openai";
 
 import { createClient } from "@/utils/supabase/server";
 
-const openai = new OpenAI();
-
 interface SentencePayload {
   text: string;
   level: string;
@@ -13,6 +11,7 @@ interface SentencePayload {
 }
 
 export async function POST(request: Request) {
+  const openai = new OpenAI();
   try {
     const { sentences, batchId } = (await request.json()) as {
       sentences: SentencePayload[];

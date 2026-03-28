@@ -1,8 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 
-const anthropic = new Anthropic();
-
 const SYSTEM_PROMPT = `Du bist ein Experte für deutsche Linguistik und CEFR-Niveaustufenklassifizierung (A1.1, A1.2, A2.1, A2.2, B1.1, B1.2).
 
 Gegeben wird ein deutscher Text und ein Zielniveau. Deine Aufgabe:
@@ -25,6 +23,7 @@ Für jeden Satz liefere ein JSON-Objekt mit:
 Antworte NUR mit einem validen JSON-Array. Keine Erklärungen, kein Markdown, kein Code-Block.`;
 
 export async function POST(request: Request) {
+  const anthropic = new Anthropic();
   try {
     const { text, level } = await request.json();
 
