@@ -65,6 +65,264 @@ const LENGTH_GUIDANCE: Record<string, string> = {
   "B1.2": "max. 5–6 Absätze; mittlere bis längere Texte (ca. 250–520 Wörter)",
 };
 
+// --- Helpers to format DB niveauregeln into prompt text ---
+
+function formatLevelDataForPrompt(level: string, data: Record<string, unknown>): string {
+  const get = (key: string): string[] => {
+    const v = data[key]; return Array.isArray(v) ? (v as string[]) : [];
+  };
+  const sub = (key: string): Record<string, string[]> => {
+    const v = data[key];
+    return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, string[]>) : {};
+  };
+  const cmt = (key: string): Record<string, string> => {
+    const v = data[key];
+    return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, string>) : {};
+  };
+  const str = (key: string): string => { const v = data[key]; return typeof v === "string" ? v : ""; };
+
+  const lines: string[] = [`NIVEAU ${level} – STRIKT EINHALTEN:`, ""];
+  const push = (...args: string[]) => args.forEach((a) => lines.push(a));
+
+  // Verbmorphologie
+  const tempora = get("tempora");
+  const temporaC = cmt("temporaComments");
+  if (tempora.length) {
+    const t = tempora.map((x) => (temporaC[x] ? `${x} (${temporaC[x]})` : x)).join("; ");
+    const modiActive = get("modi");
+    const genusVerbi = get("genusVerbi");
+    push(`Verbmorphologie: ${t}`);
+    const noTense = ["Präsens", "Präteritum", "Perfekt", "Plusquamperfekt", "Futur I", "Futur II"].filter((x) => !tempora.includes(x));
+    if (noTense.length) push(`  → Tempora NICHT: ${noTense.join(", ")}`);
+    const noModi = ["Konjunktiv I", "Konjunktiv II", "Imperativ"].filter((x) => !modiActive.includes(x));
+    if (noModi.length) push(`  → Modi NICHT: ${noModi.join(", ")}`);
+    if (!genusVerbi.includes("Vorgangspassiv") && !genusVerbi.includes("Zustandspassiv")) push("  → kein Passiv");
+    push("");
+  }
+
+  // Verbklassen
+  const vk = get("verbklassen");
+  const vkSubs = sub("verbklassenSubs");
+  const vkC = cmt("verbklassenComments");
+  if (vk.length) {
+    push("Verbklassen:");
+    vk.forEach((k) => {
+      const s = vkSubs[k] ?? [];
+      const c = vkC[k] ?? "";
+      push(`- ${k}${s.length ? `: ${s.join(", ")}` : ""}${c ? ` — ${c}` : ""}`);
+    });
+    push("");
+  }
+
+  // Kasus & Adjektiv
+  const kasus = get("kasus");
+  const kasusC = cmt("kasusComments");
+  if (kasus.length) {
+    const kt = kasus.map((k) => (kasusC[k] ? `${k} (${kasusC[k]})` : k)).join("; ");
+    push(`Kasus: ${kt}`);
+    const noKasus = ["Dativ", "Genitiv"].filter((k) => !kasus.includes(k));
+    if (noKasus.length) push(`  → NICHT: ${noKasus.join(", ")}`);
+  }
+  const adjVerw = get("adjektivVerwendung");
+  const adjVerwC = cmt("adjektivVerwendungComments");
+  if (adjVerw.length) {
+    const at = adjVerw.map((a) => (adjVerwC[a] ? `${a} (${adjVerwC[a]})` : a)).join(", ");
+    push(`Adjektiv: ${at}`);
+    if (!adjVerw.includes("attributiv")) push("  → KEIN attributives Adjektiv, keine Adjektivdeklination");
+  }
+  const steigerung = get("steigerung");
+  if (steigerung.length) {
+    const noSteig = ["Komparativ", "Superlativ", "Elativ"].filter((s) => !steigerung.includes(s));
+    if (noSteig.length) push(`Steigerung: nur ${steigerung.join(", ")}; NICHT: ${noSteig.join(", ")}`);
+  }
+  push("");
+
+  // Artikel
+  const posArt = get("possessivartikel");
+  const posKasus = sub("possessivartikelKasus");
+  const posC = cmt("possessivartikelComments");
+  const negArtC = cmt("negationsartikelComments");
+  const artLines: string[] = [];
+  if (get("bestimmterArtikel").length) artLines.push("bestimmter Artikel: der/die/das");
+  if (get("unbestimmterArtikel").length) artLines.push(`unbestimmter Artikel: ${get("unbestimmterArtikel").join(", ")}`);
+  if (get("negationsartikel").length) {
+    artLines.push(`Negationsartikel: ${negArtC["erlaubt"] || "kein/keine"}`);
+  } else {
+    artLines.push("Negationsartikel: NICHT verwenden");
+  }
+  if (posArt.length) {
+    posArt.forEach((pa) => {
+      const k = posKasus[pa] ?? [];
+      const c = posC[pa] ?? "";
+      artLines.push(`Possessivartikel: nur ${k.join("/")}${c ? ` (${c})` : ""}`);
+    });
+  } else {
+    artLines.push("Possessivartikel: NICHT verwenden");
+  }
+  const noArtikel: string[] = [];
+  if (!get("demonstrativartikel").length) noArtikel.push("Demonstrativartikel");
+  if (!get("indefinitartikel").length) noArtikel.push("Indefinitartikel");
+  if (!get("interrogativartikel").length) noArtikel.push("Interrogativartikel");
+  if (noArtikel.length) artLines.push(`NICHT: ${noArtikel.join(", ")}`);
+  if (artLines.length) { push("Artikel:"); artLines.forEach((l) => push(`- ${l}`)); push(""); }
+
+  // Pronomen
+  const pp = get("personalpronomen");
+  const ppKasus = sub("personalpronomenKasus");
+  const ppC = cmt("personalpronomenComments");
+  const pronLines: string[] = [];
+  pp.forEach((p) => {
+    const k = ppKasus[p] ?? [];
+    const c = ppC[p] ?? "";
+    pronLines.push(`Personalpronomen: ${k.length ? `nur ${k.join("/")}` : "alle Kasus"}${c ? ` — ${c}` : ""}`);
+  });
+  const noPron: string[] = [];
+  if (!get("reflexivpronomen").length) noPron.push("Reflexivpronomen");
+  if (!get("demonstrativpronomen").length) noPron.push("Demonstrativpronomen");
+  if (!get("indefinitpronomen").length) noPron.push("Indefinitpronomen");
+  if (!get("interrogativpronomen").length) noPron.push("Interrogativpronomen");
+  if (!get("diversePronomen").length) noPron.push("Pronominaladverbien");
+  if (pronLines.length || noPron.length) {
+    push("Pronomen:");
+    pronLines.forEach((l) => push(`- ${l}`));
+    if (noPron.length) push(`  → NICHT: ${noPron.join(", ")}`);
+    push("");
+  }
+
+  // Wortbildung
+  const komp = get("komposition");
+  const kompC = cmt("kompositionComments");
+  const deriv = get("derivation");
+  const derivSubs = sub("derivationSubs");
+  const konv = get("konversion");
+  const wbLines: string[] = [];
+  if (komp.length) {
+    wbLines.push(`Komposition: ${komp.map((k) => (kompC[k] ? `${k} (${kompC[k]})` : k)).join(", ")}`);
+  }
+  deriv.forEach((d) => {
+    const s = derivSubs[d] ?? [];
+    wbLines.push(`Derivation ${d}${s.length ? `: ${s.join(", ")}` : ""}`);
+  });
+  if (konv.length) wbLines.push(`Konversion: ${konv.join(", ")}`);
+  if (!wbLines.length) wbLines.push("keine komplexe Wortbildung");
+  push("Wortbildung:"); wbLines.forEach((l) => push(`- ${l}`)); push("");
+
+  // Präpositionen
+  const prSubs = sub("präpositionenSubs");
+  const prC = cmt("präpositionenComments");
+  const prEntries = Object.entries(prSubs).filter(([, v]) => v.length > 0);
+  if (prEntries.length) {
+    push("Präpositionen:");
+    prEntries.forEach(([item, vs]) => {
+      const c = prC[item] ?? "";
+      push(`- ${item}: ${(vs as string[]).join(", ")}${c ? ` — ${c}` : ""}`);
+    });
+    push("");
+  }
+
+  // Partikeln
+  const part = get("partikeln");
+  const partSubs = sub("partikelSubs");
+  const partC = cmt("partikelComments");
+  if (part.length) {
+    push("Partikeln:");
+    part.forEach((p) => {
+      const s = partSubs[p] ?? [];
+      const c = partC[p] ?? "";
+      push(`- ${p}${s.length ? `: ${s.join(", ")}` : ""}${c ? ` — ${c}` : ""}`);
+    });
+    push("");
+  }
+
+  // Adverbien
+  const adv = get("adverbien");
+  const advSubs = sub("adverbienSubs");
+  const advC = cmt("adverbienComments");
+  if (adv.length) {
+    push("Adverbien:");
+    adv.forEach((a) => {
+      const s = advSubs[a] ?? [];
+      const c = advC[a] ?? "";
+      push(`- ${a}${s.length ? `: ${s.join(", ")}` : ""}${c ? ` — ${c}` : ""}`);
+    });
+    push("");
+  }
+
+  // Numeralia
+  const num = get("numeralia");
+  const numC = cmt("numeraliaComments");
+  if (num.length) {
+    push(`Zahlwörter: ${num.map((n) => (numC[n] ? `${n} (${numC[n]})` : n)).join(", ")}`, "");
+  }
+
+  // Negation
+  const neg = get("negation");
+  const negSubs = sub("negationSubs");
+  const negC = cmt("negationComments");
+  if (neg.length) {
+    push("Negation:");
+    neg.forEach((n) => {
+      const s = negSubs[n] ?? [];
+      const c = negC[n] ?? "";
+      push(`- ${n}${s.length ? `: ${s.join(", ")}` : ""}${c ? ` — ${c}` : ""}`);
+    });
+    push("");
+  }
+
+  // Syntax
+  const satz = get("satztypen");
+  const satzC = cmt("satztypenComments");
+  const hypo = get("hypotaxe");
+  const hypoSubs = sub("hypotaxeSubs");
+  const konnList = get("konnektoren");
+  const konnSubs = sub("konnektorenSubs");
+  const konnC = cmt("konnektorenComments");
+  const para = get("parataxe");
+  const paraSubs = sub("parataxeSubs");
+  const maxLen = str("maximaleEmpfohleneSatzlaenge");
+  const maxDepth = str("maximaleVerschachtelungstiefe");
+  const komplChecks = get("satzkomplexitaetChecks");
+  push("Syntax:");
+  satz.forEach((s) => { const c = satzC[s] ?? ""; push(`- ${s}${c ? `: ${c}` : ""}`); });
+  if (para.length) {
+    push("- Parataxe (Beiordnung):");
+    para.forEach((p) => { const s = paraSubs[p] ?? []; if (s.length) push(`  ${p}: ${(s as string[]).join(", ")}`); });
+  }
+  if (hypo.length) {
+    push("- Hypotaxe (Nebensätze):");
+    hypo.forEach((h) => { const s = hypoSubs[h] ?? []; push(`  ${h}${s.length ? `: ${(s as string[]).join(", ")}` : ""}`); });
+  } else {
+    push("- KEINE Nebensätze (Hypotaxe = 0)");
+  }
+  if (konnList.length) {
+    push("- Konnektoren:");
+    konnList.forEach((k) => {
+      const s = konnSubs[k] ?? [];
+      const c = konnC[k] ?? "";
+      push(`  ${k}${s.length ? `: ${(s as string[]).join(", ")}` : ""}${c ? ` — ${c}` : ""}`);
+    });
+  }
+  if (maxLen) push(`- Satzlänge: max. ${maxLen} Wörter`);
+  if (maxDepth) push(`- Verschachtelungstiefe: max. ${maxDepth}`);
+  if (komplChecks.length) push(`- Satzkomplexität erlaubt: ${komplChecks.join(", ")}`);
+  else push("- Keine Parenthesen, keine Ellipsen");
+  push("");
+
+  return lines.join("\n").trim();
+}
+
+function formatWortliste(words: Array<{ wort: string; score: number }>): string {
+  if (!words.length) return "";
+  const high = words.filter((w) => w.score >= 0.6).map((w) => w.wort);
+  const mid = words.filter((w) => w.score >= 0.35 && w.score < 0.6).map((w) => w.wort);
+  const low = words.filter((w) => w.score >= 0.15 && w.score < 0.35).map((w) => w.wort);
+  const parts: string[] = ["═══ VOKABULAR-LEITLISTE (Top-Wörter für dieses Handlungsfeld, nach Relevanz) ═══"];
+  if (high.length) parts.push(`Kernvokabular: ${high.join(", ")}`);
+  if (mid.length) parts.push(`Relevant: ${mid.join(", ")}`);
+  if (low.length) parts.push(`Ergänzend: ${low.join(", ")}`);
+  return parts.join("\n");
+}
+
 // TEXT_TYPE_RULES removed — now fetched from DB (textsorten table)
 
 const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprache. Du schreibst Texte für Sprachlerner auf exakt dem CEFR-Niveau {{NIVEAU}}.
@@ -80,6 +338,11 @@ const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprach
 - Neutralität: keine bewertenden, romantisierenden, verniedlichenden oder moralisierenden Aussagen, es sei denn, vom Inhalt oder den Akteuren verlangt.
 - WICHTIG: Der Inhalt muss logisch und realistisch sein. Vermeide widersprüchliche Aussagen. Bei Dialogen: Wer fragt, weiss die Antwort noch nicht. Wer antwortet, gibt neue Information.
 
+═══ UMGANG MIT REALEN DATEN ═══
+- Benutze ausschliesslich fiktive Firmen- und Personennamen, fiktive Adressen für Strassenangaben. Achte darauf, dass diese erwachsenengerecht und realistisch klingen.
+- Du kannst reale Schweizer Ortschaften mit authentischen Postleitzahlen verwenden
+- Wenn Du Mobilnummern generierst, benutze immer die Vorwahl 075 oder 074, für Festnetznummern die fiktiven Vorwahlen 036, 037, 038, 039, 042, 045, 046, 047, 048, 049, 053, 054, 057, 059
+
 ═══ {{ANSPRACHE}} ═══
 {{HANDLUNGSFELD}}
 {{KONTEXTREGELN}}
@@ -91,6 +354,7 @@ const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprach
 
 ═══ {{NIVEAUREGELN}} ═══
 
+{{WORTLISTE}}
 ═══ SPEZIFISCHE ANWEISUNGEN ═══
 - Verwende Schweizer Anredeformat in Korrespondenz (Brief, E-Mail): [Anrede] Name ohne Komma, dann Leerzeile, dann Korrespondenzbeginn in Grossbuchstaben.
 - Zulässige Korrespondenzanreden: «Hallo» (informell), «Guten Tag», «Guten Tag Frau [Name]…», «Guten Tag Herr [Name]…», «Hallo [Vorname]».
@@ -116,6 +380,7 @@ const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprach
 - Ansprache-Check: gewählte Leseransprache durchgehend, inkl. Titel und Teaser.
 
 ═══ REFERENZ-SÄTZE auf Niveau {{NIVEAU}} (als Stilvorlage) ═══
+Diese Sätze dienen AUSSCHLIESSLICH als Stilvorlage für Satzbau, Wortschatz und Komplexität. Übernimm KEINE Eigennamen, Firmen- oder Markennamen daraus (z.B. Migros, Coop, Lidl, Aldi, IKEA, usw.). Verwende stattdessen fiktive Namen.
 {{REFERENZSAETZE}}`;
 
 export async function POST(request: Request) {
@@ -158,6 +423,8 @@ export async function POST(request: Request) {
     const fetchPromises: Promise<void>[] = [];
     let promptTemplate: string | null = null;
     let textsorteData: { anweisung: string; is_personal: boolean; is_dialog: boolean } | null = null as { anweisung: string; is_personal: boolean; is_dialog: boolean } | null;
+    let niveauregelnLevelData: Record<string, unknown> | null = null;
+    let topWords: Array<{ wort: string; score: number }> = [];
 
     // Fetch prompt template
     fetchPromises.push(
@@ -186,6 +453,23 @@ export async function POST(request: Request) {
       })
     );
 
+    // Fetch niveauregeln from DB for this level
+    fetchPromises.push(
+      Promise.resolve(
+        supabase
+          .from("niveauregeln")
+          .select("data")
+          .eq("id", "default")
+          .single()
+      ).then(({ data }) => {
+        if (data?.data && typeof data.data === "object") {
+          const byLevel = data.data as Record<string, Record<string, unknown>>;
+          const levelData = byLevel[level];
+          if (levelData && typeof levelData === "object") niveauregelnLevelData = levelData;
+        }
+      })
+    );
+
     if (handlungsfeld) {
       fetchPromises.push(
         Promise.all([
@@ -203,9 +487,25 @@ export async function POST(request: Request) {
               .eq("handlungsfeld_code", handlungsfeld)
               .order("sort_order")
           ),
-        ]).then(([{ data: hf }, { data: regeln }]) => {
+          // Fetch top-60 scored words for this HF + level
+          Promise.resolve(
+            supabase
+              .from("wortliste_relevanz")
+              .select("score, wortlisten!inner(wort, level)")
+              .eq("handlungsfeld_code", handlungsfeld)
+              .eq("wortlisten.level", level)
+              .order("score", { ascending: false })
+              .limit(60)
+          ),
+        ]).then(([{ data: hf }, { data: regeln }, { data: words }]) => {
           if (hf) handlungsfeldName = hf.name;
           if (regeln?.length) kontextregeln = regeln.map((r: { regel: string }) => r.regel);
+          if (Array.isArray(words)) {
+            topWords = words.map((row) => {
+              const w = row.wortlisten as unknown as { wort: string; level: string };
+              return { wort: w.wort, score: Number(row.score) };
+            });
+          }
         })
       );
     }
@@ -269,7 +569,11 @@ export async function POST(request: Request) {
 - Durchgehend «man» in Titel, Teaser und Text.`;
 
     const textTypeRule = textsorteData?.anweisung || `Textsorte «${selectedTextType}»: Schreibe einen Text dieser Textsorte mit stufengerechten Mitteln.`;
-    const levelRule = LEVEL_RULES[level];
+    // Use DB niveauregeln if available, otherwise fall back to hardcoded rules
+    const niveauregelnText = niveauregelnLevelData
+      ? formatLevelDataForPrompt(level, niveauregelnLevelData)
+      : (LEVEL_RULES[level] ?? `NIVEAU ${level}: Bitte Niveauregeln im Admin konfigurieren.`);
+    const wortlisteText = formatWortliste(topWords);
     const lengthRule = LENGTH_GUIDANCE[level];
 
     const handlungsfeldSection = handlungsfeldName
@@ -277,7 +581,7 @@ export async function POST(request: Request) {
       : "";
 
     const kontextregelnSection = kontextregeln.length
-      ? `═══ KONTEXTREGELN ═══\nBeachte folgende landeskundliche Fakten für dieses Handlungsfeld:\n${kontextregeln.map((r) => `- ${r}`).join("\n")}`
+      ? `═══ KONTEXTREGELN ═══\nDie folgenden Fakten sind Hintergrundwissen über die Schweiz. Sie informieren über Realität, aber alle Firmen-, Marken- und Institutionsnamen im generierten Text müssen trotzdem fiktiv sein (Ausnahme: Behörden, Verkehrsbetriebe, offizielle Stellen wie SBB, Post, RAV, Krankenkassen-Kategorie ohne Eigenname):\n${kontextregeln.map((r) => `- ${r}`).join("\n")}`
       : "";
 
     const lengthSection = isDialog
@@ -295,17 +599,27 @@ export async function POST(request: Request) {
       "{{KONTEXTREGELN}}": kontextregelnSection,
       "{{TEXTSORTE}}": textTypeRule,
       "{{LAENGE}}": lengthSection,
-      "{{NIVEAUREGELN}}": levelRule,
+      "{{NIVEAUREGELN}}": niveauregelnText,
+      "{{WORTLISTE}}": wortlisteText,
       "{{REFERENZSAETZE}}": examples,
       "{{TITEL_NEUTRAL}}": titelNeutral,
     };
 
     // Use DB template or fall back to hardcoded default
     const template = promptTemplate ?? fallbackPromptTemplate;
-    const systemPrompt = Object.entries(shortcodes).reduce(
+    const resolvedPrompt = Object.entries(shortcodes).reduce(
       (prompt, [key, value]) => prompt.replaceAll(key, value),
       template
     );
+
+    // Strip any existing UMGANG MIT REALEN DATEN section from the DB prompt (may be soft/outdated version)
+    // and always replace with the hardened enforcement version containing the explicit VERBOTEN list
+    const REALE_DATEN_RULE = `\n\n═══ UMGANG MIT REALEN DATEN ═══\n- Benutze ausschliesslich fiktive Firmen- und Personennamen, fiktive Adressen für Strassenangaben. Achte darauf, dass diese erwachsenengerecht und realistisch klingen.\n- VERBOTEN: echte Firmen- oder Markennamen wie Migros, Coop, Lidl, Aldi, Denner, Manor, H&M, Zara, IKEA, McDonald's, Starbucks, Volg, Spar oder ähnliche. Erfinde stattdessen zeitgemässe, glaubwürdige fiktive Namen – kurz, modern, wie echte heutige Marken. Keine Familiennamen als Firmennamen. Beispiele nach Branche: Lebensmittel: «Frischwerk», «Vivo», «Netto Frisch»; Kleidung: «Mode & Co.», «Colorit», «Fashpoint»; Bäckerei/Café: «Goldkorn», «Bäckerei Zeitlos», «Café Central»; Restaurant: «Zum Brunnen», «Trattoria Sole», «GoodBite»; Möbel/Einrichtung: «Wohnwelt», «Raumzeit», «Einrichtungshaus Nova».\n- Du kannst reale Schweizer Ortschaften mit authentischen Postleitzahlen verwenden.\n- Wenn Du Mobilnummern generierst, benutze immer die Vorwahl 075 oder 074, für Festnetznummern die fiktiven Vorwahlen 036, 037, 038, 039, 042, 045, 046, 047, 048, 049, 053, 054, 057, 059.`;
+    const promptWithoutRealeData = resolvedPrompt.replace(
+      /\n*═{3} UMGANG MIT REALEN DATEN ═{3}[\s\S]*?(?=\n═{3}|\n*$)/,
+      ""
+    );
+    const systemPrompt = promptWithoutRealeData + REALE_DATEN_RULE;
 
     const userMessage = `Schreibe einen Text auf Niveau ${level} zum Thema «${topic}»${handlungsfeldName ? ` im Handlungsfeld «${handlungsfeldName}»` : ""}.`;
 

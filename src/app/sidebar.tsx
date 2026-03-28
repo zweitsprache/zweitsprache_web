@@ -17,6 +17,7 @@ const generatorItems = [
   { href: '/admin/textgenerator/textsorten', label: 'Textsorten' },
   { href: '/admin/textgenerator/niveauregeln', label: 'Niveauregeln' },
   { href: '/admin/textgenerator/kontextregeln', label: 'Kontextregeln' },
+  { href: '/admin/textgenerator/wortlisten', label: 'Wortlisten' },
 ]
 
 export function Sidebar() {

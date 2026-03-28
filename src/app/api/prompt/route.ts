@@ -44,8 +44,7 @@ export async function PUT(request: Request) {
     const supabase = createClient(await cookies());
     const { data, error } = await supabase
       .from("prompt_templates")
-      .update({ template, updated_at: new Date().toISOString() })
-      .eq("id", "default")
+      .upsert({ id: "default", template, updated_at: new Date().toISOString() })
       .select()
       .single();
 

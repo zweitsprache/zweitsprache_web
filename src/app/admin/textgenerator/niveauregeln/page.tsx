@@ -789,9 +789,18 @@ const A1_1_SEED_DATA: Partial<LevelData> = {
   },
   modi: ["Indikativ"],
   genusVerbi: ["Aktiv"],
+  infiniteVerbformen: [],
+
+  // Kasus & Deklination
   kasus: ["Nominativ", "Akkusativ"],
   kasusComments: {
     "Akkusativ": "formal nur bei Maskulin Singular sichtbar: den/einen/keinen/meinen; ab L6",
+  },
+  deklinationsklassen: ["stark", "schwach", "gemischt"],
+  deklinationsklassenComments: {
+    "stark": "die meisten Maskulina und Neutra: der Mann, das Kind",
+    "schwach": "n-Deklination (Maskulina: der Herr, der Name) – passiv bekannt, noch nicht explizit thematisiert",
+    "gemischt": "z. B. der Name – kommt vor, aber noch nicht explizit behandelt",
   },
 
   // Adjektiv
@@ -799,14 +808,19 @@ const A1_1_SEED_DATA: Partial<LevelData> = {
   adjektivVerwendungComments: {
     "adverbial": "unveränderliche Form (gut, schnell, schön)",
   },
+  adjektivDeklination: [],
+  steigerung: ["Positiv"],
 
   // Artikel
-  bestimmterArtikel: ["bestimmter Artikel"],
+  bestimmterArtikel: ["bestimmt"],
   unbestimmterArtikel: ["ein", "eine"],
   negationsartikel: ["erlaubt"],
   negationsartikelComments: {
     "erlaubt": "kein/keine – Nominativ; keinen – Akkusativ Maskulin; ab L3",
   },
+  demonstrativartikel: [],
+  indefinitartikel: [],
+  interrogativartikel: [],
   possessivartikel: ["Possessivartikel"],
   possessivartikelKasus: { "Possessivartikel": ["Nominativ"] },
   possessivartikelComments: {
@@ -819,18 +833,51 @@ const A1_1_SEED_DATA: Partial<LevelData> = {
   personalpronomenComments: {
     "Personalpronomen": "ich, du, er/sie/es, wir, ihr, sie/Sie – nur Nominativ (L1/L2)",
   },
+  reflexivpronomen: [],
+  demonstrativpronomen: [],
+  indefinitpronomen: [],
+  interrogativpronomen: [],
+  possessivpronomen: [],
+  diversePronomen: [],
+
+  // Wortbildung
+  komposition: ["Determinativkomposita"],
+  kompositionComments: {
+    "Determinativkomposita": "einfache Zusammensetzungen wie Wohnzimmer, Kühlschrank, Telefonnummer (Schritte Band 1)",
+  },
+  derivation: [],
+  konversion: [],
+  fugenmorpheme: [],
 
   // Verbklassen
-  verbklassen: ["syntaktische Funktion", "Trennbarkeit / Verbpartikeln", "Flexionsklasse"],
+  verbklassen: ["syntaktische Funktion", "Valenz / Wertigkeit", "Trennbarkeit / Verbpartikeln", "Flexionsklasse"],
   verbklassenSubs: {
     "syntaktische Funktion": ["Vollverben", "Hilfsverben", "Modalverben"],
-    "Trennbarkeit / Verbpartikeln": ["Partikelverben"],
-    "Flexionsklasse": ["Schwache Verben", "Starke Verben", "Unregelmässige Verben"],
+    "Valenz / Wertigkeit": ["intransitiv", "transitiv"],
+    "Trennbarkeit / Verbpartikeln": ["trennbar"],
+    "Flexionsklasse": ["schwach", "stark", "unregelmässig"],
   },
   verbklassenComments: {
     "syntaktische Funktion": "Vollverben (regelmässige und unregelmässige), Hilfsverben (haben, sein – Konjugation und Perfektbildung), Modalverben (möchte L3; können, wollen L7)",
     "Trennbarkeit / Verbpartikeln": "aufräumen, aufstehen, einkaufen, anrufen, fernsehen, anfangen, abholen (L5)",
     "Flexionsklasse": "Schwache: leben, wohnen, lernen, kommen; Starke mit Vokalwechsel: sprechen/spricht, essen/isst, schlafen/schläft, fahren/fährt; Unregelmässige: sein, haben",
+  },
+
+  // Präpositionen
+  präpositionen: [],
+  präpositionenSubs: {
+    "Dativpräpositionen": ["aus", "bei", "mit", "nach", "von", "zu"],
+    "Wechselpräpositionen (Dativ/Akkusativ)": ["an", "auf", "in"],
+    "Lokal": ["an", "auf", "aus", "bei", "in", "nach", "von", "zu"],
+    "Temporal": ["ab", "an", "bis", "um", "von"],
+    "Vorangestellt (Präposition)": ["für", "mit", "von", "zu"],
+    "Primär": ["an", "auf", "aus", "bei", "in", "mit", "nach", "um", "von", "zu"],
+  },
+  präpositionenComments: {
+    "Dativpräpositionen": "als feste Ausdrücke gelernt; Kasusrektion noch nicht explizit thematisiert (L1–L6)",
+    "Wechselpräpositionen (Dativ/Akkusativ)": "an/auf/in als Ortsangaben (Wo?); Akkusativ-Richtung noch nicht explizit",
+    "Lokal": "in, an, auf, bei, nach, von, zu – Ortsangaben (L1–L6)",
+    "Temporal": "am (Wochentag), um (Uhrzeit), von … bis, ab – Zeitangaben (L5)",
   },
 
   // Partikeln
@@ -911,6 +958,14 @@ const A1_1_SEED_DATA: Partial<LevelData> = {
     "Adversativ": ["aber"],
   },
 
+  // Hypotaxe (keine auf A1.1)
+  hypotaxe: [],
+
+  // Satzkomplexität
+  satzkomplexitaetChecks: [],
+  maximaleVerschachtelungstiefe: "0",
+  maximaleEmpfohleneSatzlaenge: "8",
+
   // Konnektoren
   konnektoren: ["Konjunktionen"],
   konnektorenSubs: {
@@ -919,9 +974,1100 @@ const A1_1_SEED_DATA: Partial<LevelData> = {
   konnektorenComments: {
     "Konjunktionen": "koordinierende Konjunktionen ohne Stellungsveränderung des Finitums",
   },
+};
+
+const A1_2_SEED_DATA: Partial<LevelData> = {
+  // Verbmorphologie — kumulativ A1.1 + A1.2
+  tempora: ["Präsens", "Perfekt", "Präteritum", "Futur I"],
+  temporaComments: {
+    "Perfekt": "mit haben/sein – wie A1.1; bleibt Hauptvergangenheitsform",
+    "Präteritum": "NUR war/hatte; alle anderen Verben im Perfekt (L8)",
+    "Futur I": "werden + Infinitiv (Zukunftsaussagen, Vermutungen) – vereinzelt ab L14",
+  },
+  modi: ["Indikativ", "Imperativ", "Konjunktiv II"],
+  modiComments: {
+    "Imperativ": "du/ihr/Sie-Form; Achtung: sein → sei / seid / Seien Sie (L9)",
+    "Konjunktiv II": "nur könnte/würde + Infinitiv für höfliche Bitten; KEIN konjunktivischer Gebrauch (L12)",
+  },
+  genusVerbi: ["Aktiv"],
+  infiniteVerbformen: [],
+
+  // Kasus & Deklination
+  kasus: ["Nominativ", "Akkusativ", "Dativ"],
+  kasusComments: {
+    "Akkusativ": "bei transitiven Verben und Akkusativpräpositionen",
+    "Dativ": "mit Dativpräpositionen (vor, nach, seit, bei, mit, von, zu, für [temp.]) und Verben mit Dativ (L13)",
+  },
+  deklinationsklassen: ["stark", "schwach", "gemischt"],
+
+  // Adjektiv
+  adjektivVerwendung: ["prädikativ", "adverbial"],
+  adjektivVerwendungComments: {
+    "adverbial": "unveränderliche Form (gut, schnell, schön, besser, lieber) – noch kein attributives Adjektiv",
+  },
+  adjektivDeklination: [],
+  steigerung: ["Positiv", "Komparativ"],
+  steigerungComments: {
+    "Komparativ": "NUR unregelmässige Formen: gut/besser, viel/mehr, gern/lieber (L13); reguläre Komparativformen noch nicht thematisiert",
+  },
+
+  // Artikel
+  bestimmterArtikel: ["bestimmt"],
+  unbestimmterArtikel: ["ein", "eine"],
+  negationsartikel: ["erlaubt"],
+  negationsartikelComments: {
+    "erlaubt": "kein/keine + Akkusativ; keinem/keiner im Dativ (als feste Ausdrücke)",
+  },
+  demonstrativartikel: ["dieser"],
+  demonstrativartikelKasus: { "dieser": ["Nominativ", "Akkusativ"] },
+  demonstrativartikelComments: {
+    "dieser": "dieser/dieses/diese; Akkusativ Maskulin: diesen – als Deiktikum (L13)",
+  },
+  interrogativartikel: ["welcher"],
+  interrogativartikelKasus: { "welcher": ["Nominativ", "Akkusativ"] },
+  interrogativartikelComments: {
+    "welcher": "Welcher/welches/welche + Nom/Akk; in Fragen und Relativverweis (L13)",
+  },
+  possessivartikel: ["Possessivartikel"],
+  possessivartikelKasus: { "Possessivartikel": ["Nominativ", "Akkusativ", "Dativ"] },
+  possessivartikelComments: {
+    "Possessivartikel": "mein/dein/sein/ihr/unser/euer/ihr/Ihr – Nom, Akk, Dat Singular; Dativ erst in festen Ausdrücken",
+  },
+  indefinitartikel: [],
+
+  // Pronomen
+  personalpronomen: ["Personalpronomen"],
+  personalpronomenKasus: { "Personalpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  personalpronomenComments: {
+    "Personalpronomen": "Nom: ich/du/er/sie/es/wir/ihr/sie/Sie; Akk: mich/dich/ihn/sie/es/uns/euch/sie/Sie (L14); Dat: mir/dir/ihm/ihr/uns/euch/ihnen/Ihnen (L13)",
+  },
+  reflexivpronomen: [],
+  demonstrativpronomen: ["dieser"],
+  demonstrativpronomenKasus: { "dieser": ["Nominativ", "Akkusativ"] },
+  demonstrativpronomenComments: {
+    "dieser": "als Pronomen zur Verdeutlichung (Welcher Koffer? – Dieser.) (L13)",
+  },
+  indefinitpronomen: [],
+  interrogativpronomen: [],
+  possessivpronomen: [],
+  diversePronomen: [],
+
+  // Wortbildung
+  komposition: ["Determinativkomposita"],
+  kompositionComments: {
+    "Determinativkomposita": "wie A1.1 – produktiver Bestandteil des Berufs- und Alltagswortschatzes",
+  },
+  derivation: ["Suffixbildung"],
+  derivationSubs: {
+    "Suffixbildung": ["-ung", "-heit", "-keit", "-lich", "-bar", "-isch"],
+  },
+  derivationComments: {
+    "Suffixbildung": "-in zur Feminisierung von Berufsbezeichnungen: der Arzt → die Ärztin, der Mechatroniker → die Mechatronikerin (L8)",
+  },
+  konversion: [],
+  fugenmorpheme: [],
+
+  // Verbklassen
+  verbklassen: ["syntaktische Funktion", "Valenz / Wertigkeit", "Trennbarkeit / Verbpartikeln", "Flexionsklasse"],
+  verbklassenSubs: {
+    "syntaktische Funktion": ["Vollverben", "Hilfsverben", "Modalverben", "Kopulaverben"],
+    "Valenz / Wertigkeit": ["intransitiv", "transitiv"],
+    "Trennbarkeit / Verbpartikeln": ["trennbar"],
+    "Flexionsklasse": ["schwach", "stark", "unregelmässig"],
+  },
+  verbklassenComments: {
+    "syntaktische Funktion": "Vollverben; Hilfsverben (haben/sein/werden); Modalverben: können, müssen, dürfen, sollen, wollen, mögen/möchte (L9/10); werden als Vollverb + Futurbildung (L14)",
+    "Trennbarkeit / Verbpartikeln": "wie A1.1; trennbare Verben im Imperativ (Hör zu!) und Perfekt (aufgeräumt)",
+    "Flexionsklasse": "Schwache: regelmässig; Starke: Vokalwechsel (helfen/hilft, fahren/fährt); Unregelmässige: sein/haben/werden",
+  },
+
+  // Präpositionen
+  präpositionen: [],
+  präpositionenSubs: {
+    "Dativpräpositionen": ["ab", "aus", "bei", "mit", "nach", "seit", "von", "zu"],
+    "Akkusativpräpositionen": ["für"],
+    "Wechselpräpositionen (Dativ/Akkusativ)": ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"],
+    "Lokal": ["an", "auf", "aus", "bei", "hinter", "in", "nach", "neben", "über", "unter", "vor", "von", "zu", "zwischen"],
+    "Temporal": ["ab", "bei", "bis", "für", "in", "nach", "seit", "um", "von", "vor"],
+    "Modal": ["als", "mit"],
+    "Vorangestellt (Präposition)": ["an", "auf", "aus", "bei", "für", "in", "mit", "nach", "seit", "um", "von", "vor", "zu"],
+    "Primär": ["ab", "an", "auf", "aus", "bei", "für", "hinter", "in", "mit", "nach", "neben", "seit", "über", "um", "unter", "von", "vor", "zu", "zwischen"],
+  },
+  präpositionenComments: {
+    "Dativpräpositionen": "seit (L8: seit wann?), vor/nach/bei + Dativ temporal (L11/12), mit + Dativ modal Verkehrsmittel (L11), zu/zum/zur lokal (L11)",
+    "Akkusativpräpositionen": "für + Akkusativ temporal (für einen Monat) – L8",
+    "Wechselpräpositionen (Dativ/Akkusativ)": "Wo? → Dativ (Ort); Wohin? → Akkusativ (Richtung) – L11; Kontraktionen: am, beim, im, zum, zur",
+    "Modal": "mit dem Zug/Auto/Bus/Velo (Verkehrsmittel L11); als Hauswart/Ärztin (Berufsangabe L8)",
+  },
+
+  // Partikeln
+  partikeln: ["Modalpartikeln / Abtönungspartikeln", "Gradpartikeln", "Gesprächspartikeln / Responsive"],
+  partikelSubs: {
+    "Modalpartikeln / Abtönungspartikeln": ["denn", "doch", "eigentlich", "halt", "mal", "ja"],
+    "Gradpartikeln": ["sehr", "ein bisschen", "fast", "genug", "zu"],
+    "Gesprächspartikeln / Responsive": ["ja", "nein", "doch", "genau", "okay", "na ja", "ach so"],
+  },
+  partikelComments: {
+    "Modalpartikeln / Abtönungspartikeln": "denn in Fragen (Wie heisst du denn?); halt/eigentlich passiv bekannt (L10–L12)",
+    "Gradpartikeln": "zu (Das ist zu teuer!) und fast ergänzend ab L11",
+  },
+
+  // Adverbien
+  adverbien: ["Temporaladverbien", "Lokaladverbien", "Modaladverbien"],
+  adverbienSubs: {
+    "Temporaladverbien": ["bereits", "bald", "dann", "danach", "damals", "früher", "gestern", "gerade", "heute", "immer", "inzwischen", "jetzt", "manchmal", "meistens", "morgen", "nie", "noch", "nun", "oft", "schliesslich", "schon", "selten", "vorher", "zuerst"],
+    "Lokaladverbien": ["da", "dahin", "dort", "dorthin", "her", "hier", "hierher", "hin", "weit"],
+    "Modaladverbien": ["allein", "gern(e)", "lieber", "zusammen"],
+  },
+  adverbienComments: {
+    "Temporaladverbien": "früher/damals als Vergangenheitsbezug (L8); schon/noch als Aspektanzeiger (L10)",
+    "Modaladverbien": "gern/lieber im Komparationskontext (L13)",
+  },
+
+  // Numeralia
+  numeralia: ["Kardinalzahlen", "Ordinalzahlen"],
+  numeraliaComments: {
+    "Kardinalzahlen": "wie A1.1 (0–1 Mio.); Jahreszahlen (L8)",
+    "Ordinalzahlen": "Datum: 1.–31. (der erste … der einundzwanzigste); Kombination mit am/vom … bis (L14)",
+  },
+
+  // Negation
+  negation: ["Negationsmittel", "Stellung von nicht"],
+  negationSubs: {
+    "Negationsmittel": ["nicht", "kein", "nichts", "nie/niemals"],
+    "Stellung von nicht": ["Satznegation", "Sondernegation"],
+  },
+  negationComments: {
+    "Negationsmittel": "gar nicht (Verstärkung); nichts als Pronomen (L10)",
+    "Stellung von nicht": "Sondernegation: nicht so gut, nicht zu teuer (L13)",
+  },
+
+  // Satztypen
+  satztypen: ["Aussagesatz: Verb-Zweit-Stellung", "Fragesatz: Entscheidungsfrage", "Fragesatz: Ergänzungsfrage", "Aufforderungssatz"],
+  satztypenComments: {
+    "Aussagesatz: Verb-Zweit-Stellung": "auch mit Inversion nach Adverbial (Dann gehe ich…) – L8",
+    "Fragesatz: Entscheidungsfrage": "Verb an Pos. 1; Antwort: ja/nein/doch",
+    "Fragesatz: Ergänzungsfrage": "W-Fragen: wie lange?, seit wann?, wohin?, welcher?, welches? – erweitert (L8–L14)",
+    "Aufforderungssatz": "Imperativ du/ihr/Sie + höfliche Bitte mit könnte/würde (L9/L12)",
+  },
+
+  // Feldermodell
+  feldermodell: ["Vorfeld", "Linke Satzklammer", "Mittelfeld", "Rechte Satzklammer"],
+  feldermodellSubs: {
+    "Vorfeld": ["Subjekt", "Adverbial"],
+    "Rechte Satzklammer": ["infinite Verbteile", "Verbpartikel"],
+  },
+  feldermodellComments: {
+    "Linke Satzklammer": "finite Verbform an Pos. 2 (Aussage/Inversion) oder Pos. 1 (Entscheidungsfrage/Imperativ)",
+    "Rechte Satzklammer": "Infinitiv bei Modalverben (L9); Partizip II im Perfekt; Verbpartikel trennbarer Verben",
+  },
+
+  // Satzglieder
+  satzglieder: ["Subjekt", "Prädikat", "Objekte", "Adverbialbestimmungen"],
+  satzgliederSubs: {
+    "Prädikat": ["einteilig", "mehrteilig"],
+    "Objekte": ["Akkusativobjekt", "Dativobjekt"],
+    "Adverbialbestimmungen": ["temporal", "lokal", "modal"],
+  },
+  satzgliederComments: {
+    "Prädikat": "mehrteilig: Modalverb + Inf (L9), haben/sein + Part. II, werden + Inf (L14), trennbare Verben (L5)",
+    "Objekte": "Dativobjekt bei Verben wie gefallen, gehören, passen, stehen, schmecken (L13)",
+    "Adverbialbestimmungen": "temporal: seit einem Monat, vor einer Woche (L8); modal: mit dem Zug, als Ärztin (L8/L11)",
+  },
+
+  // Parataxe
+  parataxe: ["Kopulativ", "Disjunktiv", "Adversativ", "Kausal: denn"],
+  parataxeSubs: {
+    "Kopulativ": ["und"],
+    "Disjunktiv": ["oder"],
+    "Adversativ": ["aber"],
+    "Kausal: denn": [],
+  },
+  parataxeComments: {
+    "Kausal: denn": "denn als koordinierende Konjunktion ohne Inversion (L14): Sie feiern, denn Lara reist.",
+  },
+
+  // Hypotaxe (noch keine)
+  hypotaxe: [],
 
   // Satzkomplexität
-  maximaleEmpfohleneSatzlaenge: "8",
+  satzkomplexitaetChecks: [],
+  maximaleVerschachtelungstiefe: "0",
+  maximaleEmpfohleneSatzlaenge: "12",
+
+  // Konnektoren
+  konnektoren: ["Konjunktionen"],
+  konnektorenSubs: {
+    "Konjunktionen": ["und", "oder", "aber", "denn"],
+  },
+  konnektorenComments: {
+    "Konjunktionen": "und/oder/aber wie A1.1; denn (kausal, koordinierend) neu ab L14",
+  },
+};
+
+const A2_1_SEED_DATA: Partial<LevelData> = {
+  // Verbmorphologie — kumulativ bis A2.1
+  tempora: ["Präsens", "Perfekt", "Präteritum", "Futur I"],
+  temporaComments: {
+    "Perfekt": "bleibt Hauptvergangenheitsform in gesprochener Sprache; trennbar (kennengelernt), nicht-trennbar (erlebt), -ieren (telefoniert) – L1",
+    "Präteritum": "NUR Modalverben (musste, konnte, wollte, durfte, sollte) + war/hatte – L6",
+    "Futur I": "werden + Infinitiv – vereinzelt für Planungen/Vermutungen",
+  },
+  modi: ["Indikativ", "Imperativ", "Konjunktiv II"],
+  modiComments: {
+    "Imperativ": "du/ihr/Sie-Form wie A1.2",
+    "Konjunktiv II": "sollte (Ratschlag, L4): Du solltest Detektiv werden; werden + Inf für Höflichkeit",
+  },
+  genusVerbi: ["Aktiv"],
+  infiniteVerbformen: [],
+
+  // Kasus & Deklination
+  kasus: ["Nominativ", "Akkusativ", "Dativ"],
+  kasusComments: {
+    "Dativ": "als Objekt (Possessivartikel + Dativ L7: meinem Mann, meiner Nachbarin); von + Dativ als Genitiversatz (L1/L7)",
+  },
+  deklinationsklassen: ["stark", "schwach", "gemischt"],
+
+  // Adjektiv
+  adjektivVerwendung: ["prädikativ", "adverbial"],
+  adjektivVerwendungComments: {
+    "adverbial": "unveränderliche Form; kein attributives Adjektiv in diesem Band",
+  },
+  adjektivDeklination: [],
+  steigerung: ["Positiv", "Komparativ"],
+  steigerungComments: {
+    "Komparativ": "unregelmässig wie A1.2; reguläre Formen noch nicht eingeführt",
+  },
+
+  // Artikel
+  bestimmterArtikel: ["bestimmt"],
+  unbestimmterArtikel: ["ein", "eine"],
+  negationsartikel: ["erlaubt"],
+  demonstrativartikel: [],
+  interrogativartikel: [],
+  possessivartikel: ["Possessivartikel"],
+  possessivartikelKasus: { "Possessivartikel": ["Nominativ", "Akkusativ", "Dativ"] },
+  possessivartikelComments: {
+    "Possessivartikel": "Dativ: meinem/meiner/meinen + Nomen als indirektes Objekt (L7)",
+  },
+  indefinitartikel: [],
+
+  // Pronomen
+  personalpronomen: ["Personalpronomen"],
+  personalpronomenKasus: { "Personalpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  personalpronomenComments: {
+    "Personalpronomen": "Dat-Pronomen als Stellvertreter des Dativobjekts: ihm/ihr/ihnen (L7: Ich gebe ihm Konzertkarten.)",
+  },
+  reflexivpronomen: ["echt"],
+  reflexivpronomenKasus: { "echt": ["Akkusativ"] },
+  reflexivpronomenComments: {
+    "echt": "echte Reflexivverben: sich bewegen, sich verabreden, sich ausruhen, sich ärgern, sich beeilen, sich anziehen usw. (L5)",
+  },
+  demonstrativpronomen: [],
+  indefinitpronomen: ["Indefinitpronomen"],
+  indefinitpronomenKasus: { "Indefinitpronomen": ["Nominativ", "Akkusativ"] },
+  indefinitpronomenComments: {
+    "Indefinitpronomen": "einer/eins/eine (Nom) → einen/eins/eine (Akk); welche/keine (Pl); auch meiner/keiner (L3)",
+  },
+  interrogativpronomen: [],
+  possessivpronomen: [],
+  diversePronomen: ["Pronominaladverbien"],
+  diversePronomenComments: {
+    "Pronominaladverbien": "dafür/darauf/daran/darüber/damit/davon als Stellvertreter von Präp+Sache (L5); Fragewörter: Wofür?, Worauf? usw.",
+  },
+
+  // Wortbildung
+  komposition: ["Determinativkomposita"],
+  derivation: ["Suffixbildung"],
+  derivationSubs: {
+    "Suffixbildung": ["-ung", "-heit", "-keit", "-lich", "-bar", "-isch"],
+  },
+  konversion: [],
+  fugenmorpheme: [],
+
+  // Verbklassen
+  verbklassen: ["syntaktische Funktion", "Valenz / Wertigkeit", "Trennbarkeit / Verbpartikeln", "Flexionsklasse", "Reflexivität"],
+  verbklassenSubs: {
+    "syntaktische Funktion": ["Vollverben", "Hilfsverben", "Modalverben", "Kopulaverben"],
+    "Valenz / Wertigkeit": ["intransitiv", "transitiv", "mit Präpositionalobjekt"],
+    "Trennbarkeit / Verbpartikeln": ["trennbar", "untrennbar"],
+    "Flexionsklasse": ["schwach", "stark", "unregelmässig"],
+    "Reflexivität": ["echt"],
+  },
+  verbklassenComments: {
+    "syntaktische Funktion": "Verben mit Präpositionen (L5): warten auf, sich verabreden mit, sich freuen auf, sich erinnern an usw.",
+    "Trennbarkeit / Verbpartikeln": "nicht-trennbare Verben im Perfekt ohne ge- (erleben → erlebt, bemerken → bemerkt) – L1",
+    "Flexionsklasse": "Verben auf -ieren im Perfekt ohne ge- (telefoniert, passiert) – L1",
+  },
+
+  // Präpositionen
+  präpositionen: [],
+  präpositionenSubs: {
+    "Dativpräpositionen": ["ab", "aus", "bei", "mit", "nach", "seit", "von", "zu"],
+    "Akkusativpräpositionen": ["durch", "für", "ohne", "um"],
+    "Wechselpräpositionen (Dativ/Akkusativ)": ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"],
+    "Lokal": ["an", "auf", "aus", "bei", "durch", "hinter", "in", "neben", "über", "um", "unter", "vor", "von", "zu", "zwischen"],
+    "Temporal": ["ab", "bei", "bis", "für", "in", "nach", "seit", "um", "von", "vor"],
+    "Modal": ["als", "mit", "ohne"],
+    "Vorangestellt (Präposition)": ["an", "auf", "aus", "bei", "durch", "für", "in", "mit", "nach", "ohne", "seit", "über", "um", "von", "vor", "zu"],
+    "Primär": ["an", "auf", "aus", "bei", "durch", "für", "in", "mit", "nach", "neben", "ohne", "seit", "über", "um", "unter", "von", "vor", "zu", "zwischen"],
+  },
+  präpositionenComments: {
+    "Wechselpräpositionen (Dativ/Akkusativ)": "Wo? → Dativ (stehen/liegen/hängen); Wohin? → Akkusativ (stellen/legen/hängen) – L2; Direktionaladverbien: hier/hierhin, dort/dorthin, her.../hin... (L2)",
+    "Dativpräpositionen": "von + Dativ als Genitiversatz (L1, L7): Annas Mutter = die Mutter von Anna",
+  },
+
+  // Partikeln
+  partikeln: ["Modalpartikeln / Abtönungspartikeln", "Gradpartikeln", "Gesprächspartikeln / Responsive"],
+  partikelSubs: {
+    "Modalpartikeln / Abtönungspartikeln": ["dann", "denn", "doch", "eigentlich", "halt", "ja", "mal"],
+    "Gradpartikeln": ["sehr", "ein bisschen", "fast", "genug", "zu"],
+    "Gesprächspartikeln / Responsive": ["ja", "nein", "doch", "genau", "okay", "na ja", "ach so"],
+  },
+
+  // Adverbien
+  adverbien: ["Temporaladverbien", "Lokaladverbien", "Modaladverbien", "Kausaladverbien"],
+  adverbienSubs: {
+    "Temporaladverbien": ["bereits", "bald", "dann", "damals", "danach", "früher", "gestern", "gerade", "heute", "immer", "inzwischen", "jetzt", "manchmal", "meistens", "morgen", "nie", "noch", "nun", "oft", "schliesslich", "schon", "selten", "zuerst"],
+    "Lokaladverbien": ["da", "dahin", "dort", "dorthin", "her", "herein", "heraus", "herauf", "herunter", "hin", "hinein", "hinaus", "hinauf", "hinunter", "hier", "hierhin"],
+    "Modaladverbien": ["allein", "gern(e)", "lieber", "zusammen"],
+    "Kausaladverbien": ["deshalb", "deswegen"],
+  },
+  adverbienComments: {
+    "Lokaladverbien": "Direktionaladverbien: her.../hin... (L2: herein/hinaus/herauf/hinunter usw.); dahin/dorthin",
+    "Kausaladverbien": "deshalb/deswegen als Konjunktionaladverbien mit V2-Stellung – erst im nächsten Band explizit, aber rezeptiv bekannt",
+  },
+
+  // Numeralia
+  numeralia: ["Kardinalzahlen", "Ordinalzahlen"],
+  numeraliaComments: {
+    "Kardinalzahlen": "wie A1.x",
+    "Ordinalzahlen": "Datum, Reihenfolge (L7: der erste, der zweite...)",
+  },
+
+  // Negation
+  negation: ["Negationsmittel", "Stellung von nicht"],
+  negationSubs: {
+    "Negationsmittel": ["nicht", "kein", "nichts", "nie/niemals", "niemand"],
+    "Stellung von nicht": ["Satznegation", "Sondernegation"],
+  },
+
+  // Satztypen
+  satztypen: ["Aussagesatz: Verb-Zweit-Stellung", "Fragesatz: Entscheidungsfrage", "Fragesatz: Ergänzungsfrage", "Aufforderungssatz"],
+  satztypenComments: {
+    "Fragesatz: Ergänzungsfrage": "Worauf?/Wovon?/Wobei? (Präpositionalfragewörter, L5)",
+  },
+
+  // Feldermodell
+  feldermodell: ["Vorfeld", "Linke Satzklammer", "Mittelfeld", "Rechte Satzklammer"],
+  feldermodellSubs: {
+    "Vorfeld": ["Subjekt", "Adverbial"],
+    "Rechte Satzklammer": ["infinite Verbteile", "Verbpartikel"],
+  },
+
+  // Satzglieder
+  satzglieder: ["Subjekt", "Prädikat", "Objekte", "Adverbialbestimmungen"],
+  satzgliederSubs: {
+    "Prädikat": ["einteilig", "mehrteilig"],
+    "Objekte": ["Akkusativobjekt", "Dativobjekt"],
+    "Adverbialbestimmungen": ["temporal", "lokal", "modal"],
+  },
+  satzgliederComments: {
+    "Objekte": "Stellung der Objekte: Dat-Pron vor Akk-Pron; Dat-Nomen vor Akk-Nomen (L7)",
+  },
+
+  // Parataxe
+  parataxe: ["Kopulativ", "Disjunktiv", "Adversativ", "Kausal: denn"],
+  parataxeSubs: {
+    "Kopulativ": ["und"],
+    "Disjunktiv": ["oder"],
+    "Adversativ": ["aber"],
+    "Kausal: denn": [],
+  },
+
+  // Hypotaxe
+  hypotaxe: ["Kausalsätze", "Konditionalsätze", "Subjekt- und Objektsätze"],
+  hypotaxeSubs: {
+    "Kausalsätze": ["weil"],
+    "Konditionalsätze": ["wenn"],
+    "Subjekt- und Objektsätze": ["dass"],
+  },
+  hypotaxeComments: {
+    "Kausalsätze": "weil-Satz (L1); Verb ans Ende des Nebensatzes",
+    "Konditionalsätze": "wenn-Satz (L4); NS vor oder nach HS; bei NS-Erststellung folgt Inversion im HS",
+    "Subjekt- und Objektsätze": "dass-Satz (L6): Es ist wichtig, dass…; Ich denke/finde, dass…",
+  },
+
+  // Satzkomplexität
+  satzkomplexitaetChecks: [],
+  maximaleVerschachtelungstiefe: "1",
+  maximaleEmpfohleneSatzlaenge: "14",
+
+  // Konnektoren
+  konnektoren: ["Konjunktionen"],
+  konnektorenSubs: {
+    "Konjunktionen": ["und", "oder", "aber", "denn"],
+  },
+  konnektorenComments: {
+    "Konjunktionen": "koordinierende Konjunktionen mit V2; unterordnende: weil, wenn, dass (Nebensatz mit Verb am Ende)",
+  },
+};
+
+const A2_2_SEED_DATA: Partial<LevelData> = {
+  // Verbmorphologie — kumulativ bis A2.2
+  tempora: ["Präsens", "Perfekt", "Präteritum", "Futur I"],
+  temporaComments: {
+    "Präteritum": "Vollverben jetzt systematisch im Präteritum: regelmässig (tankte), stark (fuhr), gemischt (brachte) – L1; Modalverben + war/hatte wie bisher",
+    "Perfekt": "Wiederholung: trennbar/nicht-trennbar/-ieren – L14",
+    "Futur I": "wird + Inf.; auch Präsens + Zeitangabe für Zukünftiges (L11/CH6-Vorgriff)",
+  },
+  modi: ["Indikativ", "Imperativ", "Konjunktiv II"],
+  modiComments: {
+    "Konjunktiv II": "wäre/hätte (Wunsch, L8: Ich wäre gern am Meer.); würde + Inf. (L8); könnte (Vorschlag L8); sollte (Ratschlag); irreale Bedingungen noch nicht systematisch",
+  },
+  genusVerbi: ["Aktiv", "Vorgangspassiv"],
+  genusVerbiComments: {
+    "Vorgangspassiv": "Passiv Präsens: wird + Partizip II (L10: Das wird hineingeschrieben = Man schreibt das hinein.)",
+  },
+  infiniteVerbformen: [],
+
+  // Kasus & Deklination
+  kasus: ["Nominativ", "Akkusativ", "Dativ"],
+  kasusComments: {
+    "Akkusativ": "auch nach was für ein (L10); Adjektivdeklination indef./def./ohne Artikel",
+    "Dativ": "wie A2.1; Lokalprep. mit Dativ (Woher?: aus + Dat, von + Dat – L11)",
+  },
+  deklinationsklassen: ["stark", "schwach", "gemischt"],
+
+  // Adjektiv
+  adjektivVerwendung: ["attributiv", "prädikativ", "adverbial"],
+  adjektivVerwendungComments: {
+    "attributiv": "Deklination nach indef. Artikel (L9), def. Artikel (L10), ohne Artikel (L12)",
+  },
+  adjektivDeklination: ["starke Deklination", "schwache Deklination", "gemischte Deklination"],
+  adjektivDeklinationComments: {
+    "schwache Deklination": "nach def. Artikel: nom./akk. -e, Rest -en (L10)",
+    "gemischte Deklination": "nach indef. Artikel / Possessivartikel / kein-: nom. -er/-es/-e, Rest wie schwach (L9)",
+    "starke Deklination": "ohne Artikel: starke Endungen (L12)",
+  },
+  steigerung: ["Positiv", "Komparativ", "Superlativ"],
+  steigerungComments: {
+    "Komparativ": "regulär: schöner, interessanter; Umlaut: grösser, länger; als im Vergleich (L9)",
+    "Superlativ": "am schönsten, am grössten, am höchsten; als Attribut: der schönste (L9)",
+  },
+
+  // Artikel
+  bestimmterArtikel: ["bestimmt"],
+  unbestimmterArtikel: ["ein", "eine"],
+  negationsartikel: ["erlaubt"],
+  demonstrativartikel: [],
+  interrogativartikel: ["was für ein"],
+  interrogativartikelKasus: { "was für ein": ["Nominativ", "Akkusativ"] },
+  interrogativartikelComments: {
+    "was für ein": "Was für ein Zettel? – nominativ/akkusativ (L10)",
+  },
+  possessivartikel: ["Possessivartikel"],
+  possessivartikelKasus: { "Possessivartikel": ["Nominativ", "Akkusativ", "Dativ"] },
+  indefinitartikel: [],
+
+  // Pronomen
+  personalpronomen: ["Personalpronomen"],
+  personalpronomenKasus: { "Personalpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  reflexivpronomen: ["echt"],
+  reflexivpronomenKasus: { "echt": ["Akkusativ"] },
+  demonstrativpronomen: [],
+  indefinitpronomen: ["Indefinitpronomen"],
+  indefinitpronomenKasus: { "Indefinitpronomen": ["Nominativ", "Akkusativ"] },
+  interrogativpronomen: [],
+  possessivpronomen: [],
+  diversePronomen: ["Pronominaladverbien"],
+  diversePronomenComments: {
+    "Pronominaladverbien": "wie A2.1; erweitert (L5 CH5)",
+  },
+
+  // Wortbildung
+  komposition: ["Determinativkomposita"],
+  kompositionComments: {
+    "Determinativkomposita": "Nomen+Nomen: der Arbeitskollege (L10/L14)",
+  },
+  derivation: ["Suffixbildung", "Präfixbildung"],
+  derivationSubs: {
+    "Suffixbildung": ["-ung", "-heit", "-keit", "-lich", "-bar", "-isch", "-ig", "-los"],
+    "Präfixbildung": ["un-"],
+  },
+  derivationComments: {
+    "Suffixbildung": "-los (arbeitslos), -isch (stürmisch), -ig (eisig), -bar (fahrbar) – L9/11",
+    "Präfixbildung": "un- (unmöglich) – L10",
+  },
+  konversion: ["Substantivierung"],
+  konversionSubs: {
+    "Substantivierung": ["Verben", "Adjektive"],
+  },
+  konversionComments: {
+    "Substantivierung": "Verb → Nomen (Befragung); Diminutiv: das Bärli, das Spätzchen – L14",
+  },
+  fugenmorpheme: [],
+
+  // Verbklassen
+  verbklassen: ["syntaktische Funktion", "Valenz / Wertigkeit", "Trennbarkeit / Verbpartikeln", "Flexionsklasse", "Reflexivität"],
+  verbklassenSubs: {
+    "syntaktische Funktion": ["Vollverben", "Hilfsverben", "Modalverben", "Kopulaverben"],
+    "Valenz / Wertigkeit": ["intransitiv", "transitiv", "mit Präpositionalobjekt"],
+    "Trennbarkeit / Verbpartikeln": ["trennbar", "untrennbar"],
+    "Flexionsklasse": ["schwach", "stark", "gemischt", "unregelmässig"],
+    "Reflexivität": ["echt"],
+  },
+  verbklassenComments: {
+    "syntaktische Funktion": "lassen + Inf. (Kausativkonstruktion, L13: Sie lässt ihr Konto prüfen.)",
+    "Flexionsklasse": "Präteritum der starken/gemischten Verben systematisch (L1)",
+  },
+
+  // Präpositionen
+  präpositionen: [],
+  präpositionenSubs: {
+    "Dativpräpositionen": ["ab", "aus", "ausser", "bei", "gegenüber", "mit", "nach", "seit", "von", "zu"],
+    "Akkusativpräpositionen": ["bis", "durch", "entlang", "für", "gegen", "ohne", "um"],
+    "Wechselpräpositionen (Dativ/Akkusativ)": ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"],
+    "Lokal": ["an", "auf", "aus", "bei", "durch", "entlang", "gegenüber", "hinter", "in", "neben", "über", "um", "unter", "bis", "von", "vor", "zu", "zwischen"],
+    "Temporal": ["ab", "an", "bei", "bis", "für", "in", "nach", "seit", "um", "über", "von", "während"],
+    "Modal": ["als", "mit", "ohne"],
+    "Vorangestellt (Präposition)": ["an", "auf", "aus", "bei", "durch", "entlang", "für", "gegenüber", "gegen", "in", "mit", "nach", "ohne", "seit", "über", "um", "unter", "von", "vor", "zu"],
+    "Primär": ["an", "auf", "aus", "bei", "durch", "für", "in", "mit", "nach", "neben", "ohne", "seit", "über", "um", "unter", "von", "vor", "zu", "zwischen"],
+  },
+  präpositionenComments: {
+    "Lokal": "Woher? aus + Dat. / von + Dat. (L11); Bewegungsverb + über/durch/entlang/um...herum (L11); Wo? an/auf/in + Dat. für Landschaft (L12)",
+    "Temporal": "über + Akk. (über eine Stunde – L12); von … an + Dat. (Von August an – L12)",
+    "Modal": "ohne + Akk. (ohne lauten Verkehr – L12)",
+  },
+
+  // Partikeln
+  partikeln: ["Modalpartikeln / Abtönungspartikeln", "Gradpartikeln", "Gesprächspartikeln / Responsive"],
+  partikelSubs: {
+    "Modalpartikeln / Abtönungspartikeln": ["denn", "doch", "eigentlich", "halt", "ja", "mal", "ruhig"],
+    "Gradpartikeln": ["sehr", "ein bisschen", "fast", "genug", "zu", "ziemlich"],
+    "Gesprächspartikeln / Responsive": ["ja", "nein", "doch", "genau", "okay", "na ja", "ach so"],
+  },
+
+  // Adverbien
+  adverbien: ["Temporaladverbien", "Lokaladverbien", "Modaladverbien", "Kausaladverbien"],
+  adverbienSubs: {
+    "Temporaladverbien": ["bereits", "bald", "dann", "damals", "danach", "früher", "gestern", "gerade", "heute", "immer", "inzwischen", "jetzt", "manchmal", "meistens", "morgen", "nie", "noch", "nun", "oft", "schliesslich", "schon", "selten", "zuerst"],
+    "Lokaladverbien": ["da", "dahin", "dort", "dorthin", "her", "herein", "heraus", "hin", "im Süden", "vorne", "hinten", "oben", "unten"],
+    "Modaladverbien": ["allein", "gern(e)", "lieber", "zusammen"],
+    "Kausaladverbien": ["deshalb", "deswegen", "trotzdem"],
+  },
+  adverbienComments: {
+    "Kausaladverbien": "deshalb (L11): Tobi liebt Tiger. Deshalb möchte er…; trotzdem (L8): Eva hat keine Zeit. Trotzdem soll sie hereinkommen. – Konjunktionaladverbien mit V2-Inversion",
+  },
+
+  // Numeralia
+  numeralia: ["Kardinalzahlen", "Ordinalzahlen"],
+
+  // Negation
+  negation: ["Negationsmittel", "Stellung von nicht"],
+  negationSubs: {
+    "Negationsmittel": ["nicht", "kein", "nichts", "nie/niemals", "niemand"],
+    "Stellung von nicht": ["Satznegation", "Sondernegation"],
+  },
+
+  // Satztypen
+  satztypen: ["Aussagesatz: Verb-Zweit-Stellung", "Fragesatz: Entscheidungsfrage", "Fragesatz: Ergänzungsfrage", "Aufforderungssatz"],
+  satztypenComments: {
+    "Fragesatz: Ergänzungsfrage": "auch indirekte Fragen (L13): Können Sie mir sagen, was ich tun muss? / ob Sie Ihren Ausweis dabeihaben?",
+  },
+
+  // Feldermodell
+  feldermodell: ["Vorfeld", "Linke Satzklammer", "Mittelfeld", "Rechte Satzklammer"],
+  feldermodellSubs: {
+    "Vorfeld": ["Subjekt", "Adverbial", "Konjunktionaladverb"],
+    "Rechte Satzklammer": ["infinite Verbteile", "Verbpartikel"],
+  },
+  feldermodellComments: {
+    "Vorfeld": "Konjunktionaladverbien (deshalb, trotzdem) im Vorfeld → Inversion (L8/L11)",
+  },
+
+  // Satzglieder
+  satzglieder: ["Subjekt", "Prädikat", "Objekte", "Adverbialbestimmungen"],
+  satzgliederSubs: {
+    "Prädikat": ["einteilig", "mehrteilig"],
+    "Objekte": ["Akkusativobjekt", "Dativobjekt"],
+    "Adverbialbestimmungen": ["temporal", "lokal", "modal"],
+  },
+
+  // Parataxe
+  parataxe: ["Kopulativ", "Disjunktiv", "Adversativ", "Kausal: denn", "Konsekutiv (Konjunktionaladverbien)"],
+  parataxeSubs: {
+    "Kopulativ": ["und"],
+    "Disjunktiv": ["oder"],
+    "Adversativ": ["aber"],
+    "Kausal: denn": [],
+    "Konsekutiv (Konjunktionaladverbien)": ["deshalb", "deswegen", "trotzdem"],
+  },
+  parataxeComments: {
+    "Konsekutiv (Konjunktionaladverbien)": "deshalb/deswegen/trotzdem mit V2-Inversion (L8/L11)",
+  },
+
+  // Hypotaxe
+  hypotaxe: ["Kausalsätze", "Konditionalsätze", "Subjekt- und Objektsätze"],
+  hypotaxeSubs: {
+    "Kausalsätze": ["weil"],
+    "Konditionalsätze": ["wenn"],
+    "Subjekt- und Objektsätze": ["dass", "ob", "indirekte Fragen"],
+  },
+  hypotaxeComments: {
+    "Subjekt- und Objektsätze": "indirekte Fragen mit W-Wort (L13) und ob (L13)",
+  },
+
+  // Satzkomplexität
+  satzkomplexitaetChecks: [],
+  maximaleVerschachtelungstiefe: "1",
+  maximaleEmpfohleneSatzlaenge: "16",
+
+  // Konnektoren
+  konnektoren: ["Konjunktionen", "Konjunktionaladverbien"],
+  konnektorenSubs: {
+    "Konjunktionen": ["und", "oder", "aber", "denn"],
+    "Konjunktionaladverbien": ["deshalb", "deswegen", "trotzdem"],
+  },
+};
+
+const B1_1_SEED_DATA: Partial<LevelData> = {
+  // Verbmorphologie — kumulativ bis B1.1
+  tempora: ["Präsens", "Perfekt", "Präteritum", "Plusquamperfekt", "Futur I"],
+  temporaComments: {
+    "Präteritum": "alle Typen (schwach, stark, gemischt); systematisches Schreiben + Nachrichten/Berichte (L1)",
+    "Plusquamperfekt": "hatte/war + Part. II für Vorzeitigkeit in Narrationen (L1: Er hatte sich den Fuss gebrochen.)",
+    "Futur I": "wird + Inf. für Vorhersage, Versprechen, Vorsatz, Aufforderung (L11/CH6-Vorgriff)",
+  },
+  modi: ["Indikativ", "Imperativ", "Konjunktiv II"],
+  modiComments: {
+    "Konjunktiv II": "irreale Bedingungen (L4: Wenn ich ihn toll finden würde, hätte ich…); Konjunktiv II Vergangenheit: hätte/wäre + Part. II (L7: Hätte ich nur nichts gesagt!); wäre/hätte/würde/könnte/sollte wie bisher",
+  },
+  genusVerbi: ["Aktiv", "Vorgangspassiv"],
+  genusVerbiComments: {
+    "Vorgangspassiv": "Passiv Präsens + Modalverben (L3: Auf Bewegung sollte geachtet werden.); alle einfachen Passivformen im Präsens",
+  },
+  infiniteVerbformen: ["Infinitiv mit zu"],
+  infiniteVerbformenComments: {
+    "Infinitiv mit zu": "nach anfangen, aufhören, vergessen, sich vorstellen, versuchen, erwarten; nach Es ist toll/leicht/…; nach Hast du Lust? (L5)",
+  },
+
+  // Kasus & Deklination
+  kasus: ["Nominativ", "Akkusativ", "Dativ", "Genitiv"],
+  kasusComments: {
+    "Genitiv": "def. Artikel (des Rückens, der Fitness); indef. Artikel (eines Fachmanns); wegen + Gen. (L4); während + Gen. (L5); trotz + Gen. (L7)",
+  },
+  deklinationsklassen: ["stark", "schwach", "gemischt"],
+
+  // Adjektiv
+  adjektivVerwendung: ["attributiv", "prädikativ", "adverbial"],
+  adjektivDeklination: ["starke Deklination", "schwache Deklination", "gemischte Deklination"],
+  steigerung: ["Positiv", "Komparativ", "Superlativ"],
+  steigerungComments: {
+    "Komparativ": "als (Ungleichheit); genauso … wie (Gleichheit) – wie A2.2",
+  },
+
+  // Artikel
+  bestimmterArtikel: ["bestimmt"],
+  unbestimmterArtikel: ["ein", "eine"],
+  negationsartikel: ["erlaubt"],
+  demonstrativartikel: [],
+  interrogativartikel: ["was für ein"],
+  interrogativartikelKasus: { "was für ein": ["Nominativ", "Akkusativ"] },
+  possessivartikel: ["Possessivartikel"],
+  possessivartikelKasus: { "Possessivartikel": ["Nominativ", "Akkusativ", "Dativ", "Genitiv"] },
+  possessivartikelComments: {
+    "Possessivartikel": "jetzt auch im Genitiv (meines Berufs, meiner Arbeit – L4)",
+  },
+  indefinitartikel: [],
+
+  // Pronomen
+  personalpronomen: ["Personalpronomen"],
+  personalpronomenKasus: { "Personalpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  reflexivpronomen: ["echt", "unecht"],
+  reflexivpronomenKasus: { "echt": ["Akkusativ", "Dativ"], "unecht": ["Akkusativ"] },
+  reflexivpronomenComments: {
+    "unecht": "unechte Reflexivverben mit Dat-Reflexivpronomen bei transitiven Verben (sich etwas vorstellen, sich merken)",
+  },
+  demonstrativpronomen: [],
+  indefinitpronomen: ["Indefinitpronomen"],
+  indefinitpronomenKasus: { "Indefinitpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  interrogativpronomen: [],
+  possessivpronomen: [],
+  diversePronomen: ["Pronominaladverbien"],
+  diversePronomenComments: {
+    "Pronominaladverbien": "daran/darüber/damit/wozu/wovon usw. (L7: Verben mit Präpositionen); systematisch für Sache-Referenz",
+  },
+
+  // Wortbildung
+  komposition: ["Determinativkomposita"],
+  derivation: ["Suffixbildung", "Präfixbildung"],
+  derivationSubs: {
+    "Suffixbildung": ["-ung", "-heit", "-keit", "-lich", "-bar", "-isch", "-ig", "-los"],
+    "Präfixbildung": ["un-", "ver-", "be-"],
+  },
+  konversion: ["Substantivierung"],
+  konversionSubs: {
+    "Substantivierung": ["Verben", "Adjektive"],
+  },
+  fugenmorpheme: [],
+
+  // Verbklassen
+  verbklassen: ["syntaktische Funktion", "Valenz / Wertigkeit", "Trennbarkeit / Verbpartikeln", "Flexionsklasse", "Reflexivität"],
+  verbklassenSubs: {
+    "syntaktische Funktion": ["Vollverben", "Hilfsverben", "Modalverben", "Kopulaverben"],
+    "Valenz / Wertigkeit": ["intransitiv", "transitiv", "mit Präpositionalobjekt"],
+    "Trennbarkeit / Verbpartikeln": ["trennbar", "untrennbar"],
+    "Flexionsklasse": ["schwach", "stark", "gemischt", "unregelmässig"],
+    "Reflexivität": ["echt", "unecht"],
+  },
+  verbklassenComments: {
+    "syntaktische Funktion": "Verben mit es (L6: Es gibt, Es ist leicht, Es lohnt sich, Es regnet, Wie geht es?)",
+    "Valenz / Wertigkeit": "Verben mit Präpositionalobjekt systematisch (L7): denken an, sich erinnern an, träumen von, verbinden mit, gehören zu",
+  },
+
+  // Präpositionen
+  präpositionen: [],
+  präpositionenSubs: {
+    "Dativpräpositionen": ["ab", "aus", "ausser", "bei", "gegenüber", "innerhalb", "mit", "nach", "seit", "von", "zu", "zufolge"],
+    "Akkusativpräpositionen": ["durch", "für", "gegen", "ohne", "um"],
+    "Genitivpräpositionen": ["ausserhalb", "innerhalb", "trotz", "wegen", "während"],
+    "Wechselpräpositionen (Dativ/Akkusativ)": ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"],
+    "Lokal": ["an", "auf", "aus", "ausserhalb", "bei", "durch", "gegenüber", "hinter", "in", "innerhalb", "neben", "über", "um", "unter", "von", "vor", "zu", "zwischen"],
+    "Temporal": ["ab", "an", "bei", "bis", "für", "in", "nach", "seit", "um", "während"],
+    "Kausal": ["wegen"],
+    "Konzessiv": ["trotz"],
+    "Modal": ["als", "ausser", "mit", "ohne"],
+    "Vorangestellt (Präposition)": ["an", "auf", "aus", "ausser", "bei", "durch", "für", "gegenüber", "in", "innerhalb", "mit", "nach", "ohne", "seit", "trotz", "über", "um", "von", "vor", "wegen", "während", "zu"],
+    "Primär": ["an", "auf", "aus", "bei", "durch", "für", "in", "mit", "nach", "ohne", "seit", "trotz", "über", "um", "unter", "von", "vor", "wegen", "zu", "zwischen"],
+  },
+  präpositionenComments: {
+    "Genitivpräpositionen": "wegen + Gen. (L4), während + Gen. (L5), trotz + Gen. (L7); ausserhalb/innerhalb – L5",
+    "Dativpräpositionen": "ausser + Dat. (L12): alle ausser meiner Schwester",
+  },
+
+  // Partikeln
+  partikeln: ["Modalpartikeln / Abtönungspartikeln", "Gradpartikeln", "Gesprächspartikeln / Responsive"],
+  partikelSubs: {
+    "Modalpartikeln / Abtönungspartikeln": ["bloss", "denn", "doch", "eben", "eigentlich", "halt", "ja", "mal", "ruhig", "schon", "wohl"],
+    "Gradpartikeln": ["äusserst", "besonders", "ein bisschen", "fast", "genug", "nicht besonders", "total", "überhaupt nicht", "völlig", "wirklich", "ziemlich", "zu"],
+    "Gesprächspartikeln / Responsive": ["ja", "nein", "doch", "genau", "okay", "na ja", "ach so"],
+  },
+  partikelComments: {
+    "Gradpartikeln": "Gradskala: total/völlig ++ ziemlich/wirklich + nicht besonders – überhaupt/gar nicht -- (L2)",
+  },
+
+  // Adverbien
+  adverbien: ["Temporaladverbien", "Lokaladverbien", "Modaladverbien", "Kausaladverbien"],
+  adverbienSubs: {
+    "Temporaladverbien": ["bereits", "bald", "dann", "damals", "danach", "früher", "gestern", "gerade", "heute", "immer", "inzwischen", "jetzt", "manchmal", "meistens", "morgen", "nie", "noch", "nun", "oft", "schliesslich", "schon", "selten", "zuerst"],
+    "Lokaladverbien": ["da", "dahin", "dort", "dorthin", "her", "hin", "irgendwo", "nirgends", "überall"],
+    "Modaladverbien": ["allein", "gern(e)", "irgendwie", "lieber", "zusammen"],
+    "Kausaladverbien": ["daher", "darum", "deshalb", "deswegen"],
+  },
+
+  // Numeralia
+  numeralia: ["Kardinalzahlen", "Ordinalzahlen"],
+
+  // Negation
+  negation: ["Negationsmittel", "Stellung von nicht"],
+  negationSubs: {
+    "Negationsmittel": ["nicht", "kein", "nichts", "nie/niemals", "niemand", "weder … noch"],
+    "Stellung von nicht": ["Satznegation", "Sondernegation"],
+  },
+
+  // Satztypen
+  satztypen: ["Aussagesatz: Verb-Zweit-Stellung", "Fragesatz: Entscheidungsfrage", "Fragesatz: Ergänzungsfrage", "Aufforderungssatz"],
+
+  // Feldermodell
+  feldermodell: ["Vorfeld", "Linke Satzklammer", "Mittelfeld", "Rechte Satzklammer"],
+  feldermodellSubs: {
+    "Vorfeld": ["Subjekt", "Adverbial", "Konjunktionaladverb", "Nebensatz"],
+    "Rechte Satzklammer": ["infinite Verbteile", "Verbpartikel"],
+  },
+  feldermodellComments: {
+    "Vorfeld": "Wenn-Satz / als-Satz im Vorfeld → Hauptsatz mit Inversion",
+  },
+
+  // Satzglieder
+  satzglieder: ["Subjekt", "Prädikat", "Objekte", "Adverbialbestimmungen"],
+  satzgliederSubs: {
+    "Prädikat": ["einteilig", "mehrteilig"],
+    "Objekte": ["Akkusativobjekt", "Dativobjekt"],
+    "Adverbialbestimmungen": ["temporal", "lokal", "modal", "kausal"],
+  },
+  satzgliederComments: {
+    "Adverbialbestimmungen": "kausal: wegen meines Berufs (L4); konzessiv: trotz der grossen Freude (L7)",
+  },
+
+  // Parataxe
+  parataxe: ["Kopulativ", "Disjunktiv", "Adversativ", "Kausal: denn", "Konsekutiv (Konjunktionaladverbien)"],
+  parataxeSubs: {
+    "Kopulativ": ["und"],
+    "Disjunktiv": ["oder"],
+    "Adversativ": ["aber"],
+    "Kausal: denn": [],
+    "Konsekutiv (Konjunktionaladverbien)": ["also", "daher", "deshalb", "deswegen"],
+  },
+
+  // Hypotaxe
+  hypotaxe: ["Temporalsätze", "Kausalsätze", "Konditionalsätze", "Konzessivsätze", "Finalsätze", "Relativsätze", "Subjekt- und Objektsätze"],
+  hypotaxeSubs: {
+    "Temporalsätze": ["als", "wenn"],
+    "Kausalsätze": ["weil"],
+    "Konditionalsätze": ["wenn"],
+    "Konzessivsätze": ["obwohl"],
+    "Finalsätze": ["damit", "um … zu"],
+    "Relativsätze": ["der/die/das"],
+    "Subjekt- und Objektsätze": ["dass", "ob", "indirekte Fragen", "Infinitiv mit zu"],
+  },
+  hypotaxeComments: {
+    "Temporalsätze": "als (einmalige Vergangenheit, L1); wenn (wiederholte/zukünftige Ereignisse)",
+    "Konzessivsätze": "obwohl (L2): Ben schaut an, obwohl er sie schon dreimal gesehen hat.",
+    "Finalsätze": "um … zu + Inf. (gleich. Subjekt, L6); damit + NS (versch. Subjekte, L6); statt … zu / ohne … zu (L6)",
+    "Relativsätze": "Nom./Akk./Dat. (L2); Relativpronomen nach definiertem Bezugsnomen; denen im Plural",
+  },
+
+  // Satzkomplexität
+  satzkomplexitaetChecks: [],
+  maximaleVerschachtelungstiefe: "2",
+  maximaleEmpfohleneSatzlaenge: "18",
+
+  // Konnektoren
+  konnektoren: ["Konjunktionen", "Konjunktionaladverbien", "Mehrteilige Konnektoren"],
+  konnektorenSubs: {
+    "Konjunktionen": ["aber", "denn", "oder", "sondern", "und"],
+    "Konjunktionaladverbien": ["also", "daher", "deshalb", "deswegen"],
+    "Mehrteilige Konnektoren": ["entweder … oder", "nicht nur … sondern auch", "zwar … aber"],
+  },
+  konnektorenComments: {
+    "Mehrteilige Konnektoren": "nicht nur … sondern auch (L7); zwar … aber (L7); entweder … oder (L7)",
+  },
+};
+
+const B1_2_SEED_DATA: Partial<LevelData> = {
+  // Verbmorphologie — kumulativ B1 vollständig
+  tempora: ["Präsens", "Perfekt", "Präteritum", "Plusquamperfekt", "Futur I"],
+  temporaComments: {
+    "Präteritum": "alle Verben; stilistisch für Zeitungen, Berichte, Bücher (L1 CH5)",
+    "Plusquamperfekt": "Vorvergangenheit in Narrationen",
+    "Futur I": "Futur I (Auffordering/Versprechen/Vorhersage) + Präsens mit Zeitangabe (Zukunft sicher, L11); Passiv Perfekt (L13: ist gegründet worden) + Passiv Präteritum (L13: wurde gewählt)",
+  },
+  modi: ["Indikativ", "Imperativ", "Konjunktiv II"],
+  modiComments: {
+    "Konjunktiv II": "als ob + Konj.II (L9: Du tust so, als ob ich keine Ahnung hätte.); irreale Bedingungen + Vergangenheit (L7 CH5) voll konsolidiert",
+  },
+  genusVerbi: ["Aktiv", "Vorgangspassiv"],
+  genusVerbiComments: {
+    "Vorgangspassiv": "Passiv Perfekt (ist + Part.II + worden – L13) und Passiv Präteritum (wurde + Part.II – L13); Passiv mit Modalverben (L3 CH5)",
+  },
+  infiniteVerbformen: ["Infinitiv mit zu", "Partizip I"],
+  infiniteVerbformenComments: {
+    "Infinitiv mit zu": "wie B1.1; erweitert: statt … zu / ohne … zu",
+    "Partizip I": "Partizip Präsens als Adjektiv (L10: der wohltuende Tee, das hupende Fahrzeug)",
+  },
+
+  // Kasus & Deklination
+  kasus: ["Nominativ", "Akkusativ", "Dativ", "Genitiv"],
+  kasusComments: {
+    "Genitiv": "n-Deklination (L8: der Kollege → Kollegen in Akk/Dat); Adjektiv als Nomen (L8: der/ein Bekannte/r); Adjektiv mit Komparativ/Superlativ dekliniert (L13)",
+  },
+  deklinationsklassen: ["stark", "schwach", "gemischt"],
+  deklinationsklassenComments: {
+    "schwach": "n-Deklination systematisch (L8): der Mensch, der Nachbar, der Praktikant, der Junge, der Pole usw.",
+  },
+
+  // Adjektiv
+  adjektivVerwendung: ["attributiv", "prädikativ", "adverbial"],
+  adjektivDeklination: ["starke Deklination", "schwache Deklination", "gemischte Deklination"],
+  adjektivDeklinationComments: {
+    "attributiv": "Partizip Präsens als attributives Adjektiv (L10); Komparativ/Superlativ attributiv dekliniert (L13: der grössere Teil)",
+  },
+  steigerung: ["Positiv", "Komparativ", "Superlativ"],
+  steigerungComments: {
+    "Superlativ": "attributiv mit Deklination (L13); je … desto/umso (L8: Je länger…, desto schlechter…)",
+  },
+
+  // Artikel
+  bestimmterArtikel: ["bestimmt"],
+  unbestimmterArtikel: ["ein", "eine"],
+  negationsartikel: ["erlaubt"],
+  demonstrativartikel: [],
+  interrogativartikel: ["was für ein"],
+  interrogativartikelKasus: { "was für ein": ["Nominativ", "Akkusativ"] },
+  possessivartikel: ["Possessivartikel"],
+  possessivartikelKasus: { "Possessivartikel": ["Nominativ", "Akkusativ", "Dativ", "Genitiv"] },
+  indefinitartikel: [],
+
+  // Pronomen
+  personalpronomen: ["Personalpronomen"],
+  personalpronomenKasus: { "Personalpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  reflexivpronomen: ["echt", "unecht"],
+  reflexivpronomenKasus: { "echt": ["Akkusativ", "Dativ"], "unecht": ["Akkusativ", "Dativ"] },
+  demonstrativpronomen: [],
+  indefinitpronomen: ["Indefinitpronomen"],
+  indefinitpronomenKasus: { "Indefinitpronomen": ["Nominativ", "Akkusativ", "Dativ"] },
+  interrogativpronomen: [],
+  possessivpronomen: [],
+  diversePronomen: ["Pronominaladverbien"],
+  diversePronomenComments: {
+    "Pronominaladverbien": "Relativsatz mit Präpositionen: über den/die/das; von dem/der/denen (L8 CH6); Präpositionaladverbien (L14 CH6): daran/darüber/damit/dazu/davon + Fragewörter",
+  },
+
+  // Wortbildung
+  komposition: ["Determinativkomposita"],
+  kompositionComments: {
+    "Determinativkomposita": "Nomen+Nomen mit Fugenmorphem: die Adventszeit (Advent+s+Zeit), L14; aktiv produktiv",
+  },
+  derivation: ["Suffixbildung", "Präfixbildung"],
+  derivationSubs: {
+    "Suffixbildung": ["-ung", "-heit", "-keit", "-lich", "-bar", "-isch", "-ig", "-los"],
+    "Präfixbildung": ["un-", "ver-", "be-", "miss-"],
+  },
+  derivationComments: {
+    "Suffixbildung": "Wiederholung aller bekannten Suffixe (L14 CH6)",
+    "Präfixbildung": "miss- (Missverständnis – L11 CH6); un- für Negation/Antonym (unerträglich)",
+  },
+  konversion: ["Substantivierung"],
+  konversionSubs: {
+    "Substantivierung": ["Verben", "Adjektive"],
+  },
+  konversionComments: {
+    "Substantivierung": "Verb → Nomen: sich erinnern → die Erinnerung; mischen → die Mischung (L14 CH6)",
+  },
+  fugenmorpheme: ["-s-", "-n-", "-en-"],
+  fugenmorphemeComments: {
+    "-s-": "Adventszeit, Arbeitskollege (häufig bei Komposita)",
+  },
+
+  // Verbklassen
+  verbklassen: ["syntaktische Funktion", "Valenz / Wertigkeit", "Trennbarkeit / Verbpartikeln", "Flexionsklasse", "Reflexivität"],
+  verbklassenSubs: {
+    "syntaktische Funktion": ["Vollverben", "Hilfsverben", "Modalverben", "Kopulaverben"],
+    "Valenz / Wertigkeit": ["intransitiv", "transitiv", "mit Präpositionalobjekt"],
+    "Trennbarkeit / Verbpartikeln": ["trennbar", "untrennbar"],
+    "Flexionsklasse": ["schwach", "stark", "gemischt", "unregelmässig"],
+    "Reflexivität": ["echt", "unecht"],
+  },
+  verbklassenComments: {
+    "Valenz / Wertigkeit": "Verben mit Präpositionalobjekt (L14 CH6): denken an, sich erinnern an, sich freuen über, verbinden mit, gehören zu, träumen von",
+  },
+
+  // Präpositionen
+  präpositionen: [],
+  präpositionenSubs: {
+    "Dativpräpositionen": ["ab", "aus", "ausser", "bei", "gegenüber", "innerhalb", "mit", "nach", "seit", "von", "zu"],
+    "Akkusativpräpositionen": ["durch", "für", "gegen", "ohne", "um"],
+    "Genitivpräpositionen": ["ausserhalb", "innerhalb", "trotz", "wegen", "während"],
+    "Wechselpräpositionen (Dativ/Akkusativ)": ["an", "auf", "hinter", "in", "neben", "über", "unter", "vor", "zwischen"],
+    "Lokal": ["an", "auf", "aus", "ausserhalb", "bei", "durch", "gegenüber", "hinter", "in", "innerhalb", "neben", "über", "um", "unter", "von", "vor", "zu", "zwischen"],
+    "Temporal": ["ab", "an", "bei", "bis", "für", "in", "nach", "seit", "um", "während", "seitdem"],
+    "Kausal": ["wegen"],
+    "Konzessiv": ["trotz"],
+    "Modal": ["als", "ausser", "mit", "ohne"],
+    "Vorangestellt (Präposition)": ["an", "auf", "aus", "ausser", "bei", "durch", "für", "gegenüber", "in", "innerhalb", "mit", "nach", "ohne", "seit", "trotz", "über", "um", "unter", "von", "vor", "wegen", "während", "zu"],
+    "Primär": ["an", "auf", "aus", "bei", "durch", "für", "in", "mit", "nach", "ohne", "seit", "trotz", "über", "um", "unter", "von", "vor", "wegen", "zu", "zwischen"],
+  },
+  präpositionenComments: {
+    "Genitivpräpositionen": "wegen/trotz/während + Gen. (CH5); ausserhalb/innerhalb + Gen.",
+    "Dativpräpositionen": "seitdem/seit als temporale Angabe (L12 CH6: seit/seitdem ich 16 bin)",
+  },
+
+  // Partikeln
+  partikeln: ["Modalpartikeln / Abtönungspartikeln", "Gradpartikeln", "Gesprächspartikeln / Responsive"],
+  partikelSubs: {
+    "Modalpartikeln / Abtönungspartikeln": ["bloss", "denn", "doch", "eben", "eigentlich", "halt", "ja", "mal", "ruhig", "schon", "wohl"],
+    "Gradpartikeln": ["äusserst", "besonders", "ein bisschen", "fast", "genug", "nicht besonders", "total", "überhaupt nicht", "völlig", "wirklich", "ziemlich", "zu"],
+    "Gesprächspartikeln / Responsive": ["ja", "nein", "doch", "genau", "okay", "na ja", "ach so", "tja"],
+  },
+
+  // Adverbien
+  adverbien: ["Temporaladverbien", "Lokaladverbien", "Modaladverbien", "Kausaladverbien"],
+  adverbienSubs: {
+    "Temporaladverbien": ["bereits", "bald", "dann", "damals", "danach", "früher", "gestern", "gerade", "heute", "immer", "inzwischen", "jetzt", "manchmal", "meistens", "morgen", "nie", "noch", "nun", "oft", "schliesslich", "schon", "selten", "zuerst"],
+    "Lokaladverbien": ["da", "dahin", "dort", "dorthin", "her", "hin", "irgendwo", "nirgends", "überall"],
+    "Modaladverbien": ["allein", "gern(e)", "irgendwie", "lieber", "zusammen"],
+    "Kausaladverbien": ["daher", "darum", "deshalb", "deswegen"],
+  },
+
+  // Numeralia
+  numeralia: ["Kardinalzahlen", "Ordinalzahlen"],
+
+  // Negation
+  negation: ["Negationsmittel", "Stellung von nicht"],
+  negationSubs: {
+    "Negationsmittel": ["nicht", "kein", "nichts", "nie/niemals", "niemand", "weder … noch"],
+    "Stellung von nicht": ["Satznegation", "Sondernegation"],
+  },
+
+  // Satztypen
+  satztypen: ["Aussagesatz: Verb-Zweit-Stellung", "Fragesatz: Entscheidungsfrage", "Fragesatz: Ergänzungsfrage", "Aufforderungssatz"],
+
+  // Feldermodell
+  feldermodell: ["Vorfeld", "Linke Satzklammer", "Mittelfeld", "Rechte Satzklammer"],
+  feldermodellSubs: {
+    "Vorfeld": ["Subjekt", "Adverbial", "Konjunktionaladverb", "Nebensatz"],
+    "Rechte Satzklammer": ["infinite Verbteile", "Verbpartikel"],
+  },
+
+  // Satzglieder
+  satzglieder: ["Subjekt", "Prädikat", "Objekte", "Adverbialbestimmungen"],
+  satzgliederSubs: {
+    "Prädikat": ["einteilig", "mehrteilig"],
+    "Objekte": ["Akkusativobjekt", "Dativobjekt"],
+    "Adverbialbestimmungen": ["temporal", "lokal", "modal", "kausal"],
+  },
+
+  // Parataxe
+  parataxe: ["Kopulativ", "Disjunktiv", "Adversativ", "Kausal: denn", "Konsekutiv (Konjunktionaladverbien)"],
+  parataxeSubs: {
+    "Kopulativ": ["und", "sowohl … als auch"],
+    "Disjunktiv": ["oder", "entweder … oder"],
+    "Adversativ": ["aber", "sondern"],
+    "Kausal: denn": [],
+    "Konsekutiv (Konjunktionaladverbien)": ["also", "daher", "deshalb", "deswegen"],
+  },
+  parataxeComments: {
+    "Kopulativ": "sowohl … als auch (L10 CH6)",
+    "Disjunktiv": "weder … noch (L10 CH6)",
+  },
+
+  // Hypotaxe
+  hypotaxe: ["Temporalsätze", "Kausalsätze", "Konditionalsätze", "Konzessivsätze", "Finalsätze", "Modalsätze", "Relativsätze", "Subjekt- und Objektsätze"],
+  hypotaxeSubs: {
+    "Temporalsätze": ["als", "bevor", "bis", "nachdem", "seitdem", "während", "wenn"],
+    "Kausalsätze": ["da", "weil"],
+    "Konditionalsätze": ["falls", "wenn"],
+    "Konzessivsätze": ["obwohl"],
+    "Finalsätze": ["damit", "um … zu"],
+    "Modalsätze": ["indem", "ohne dass", "ohne … zu"],
+    "Relativsätze": ["der/die/das"],
+    "Subjekt- und Objektsätze": ["als ob", "dass", "ob", "indirekte Fragen", "Infinitiv mit zu"],
+  },
+  hypotaxeComments: {
+    "Temporalsätze": "bevor (L9 CH6: bevor er «Superstar» wurde); nachdem + Plusquamperfekt (L9 CH6); seitdem (L12 CH6); bis (L12 CH6); während (L9 CH6)",
+    "Kausalsätze": "da als stilistische Variante zu weil (L11 CH6: da wir mit dem Klassenlehrer sprechen wollen)",
+    "Konditionalsätze": "falls (L8 CH6: falls dich das interessiert)",
+    "Modalsätze": "indem (L12 CH6); ohne dass / ohne … zu (L12 CH6)",
+    "Relativsätze": "Relativsatz mit Präpositionen (L8 CH6: über den/von dem/über die/von denen); Relativ mit wo (L10 CH6: dort, wo …); was (L10 CH6: das, was …)",
+    "Subjekt- und Objektsätze": "als ob + Konj.II (L9 CH6: als ob ich keine Ahnung hätte)",
+  },
+
+  // Satzkomplexität
+  satzkomplexitaetChecks: [],
+  maximaleVerschachtelungstiefe: "2",
+  maximaleEmpfohleneSatzlaenge: "20",
+
+  // Konnektoren
+  konnektoren: ["Konjunktionen", "Konjunktionaladverbien", "Mehrteilige Konnektoren"],
+  konnektorenSubs: {
+    "Konjunktionen": ["aber", "bevor", "da", "damit", "dass", "denn", "falls", "indem", "nachdem", "obwohl", "oder", "seitdem", "sondern", "während", "wenn", "weil", "und"],
+    "Konjunktionaladverbien": ["also", "daher", "danach", "dann", "darum", "deshalb", "deswegen", "trotzdem"],
+    "Mehrteilige Konnektoren": ["entweder … oder", "je … desto/umso", "nicht nur … sondern auch", "sowohl … als auch", "weder … noch", "zwar … aber"],
+  },
+  konnektorenComments: {
+    "Mehrteilige Konnektoren": "je … desto/umso (L8 CH6); sowohl … als auch / weder … noch (L10 CH6); nicht nur … sondern auch / zwar … aber (L7 CH5)",
+  },
 };
 
 const createInitialLevelData = () => {
@@ -997,6 +2143,272 @@ export default function NiveauregelnPage() {
         ...A1_1_SEED_DATA,
       },
     }));
+  };
+
+  const applyA11SeedAndSave = async () => {
+    const merged: Record<Level, LevelData> = {
+      ...data,
+      "A1.1": {
+        ...createEmptyLevelData(),
+        ...A1_1_SEED_DATA,
+      },
+    };
+    setData(merged);
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const response = await fetch("/api/niveauregeln", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: merged }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const normalized = normalizeStoredData(payload.data);
+      setData(normalized);
+      setSavedData(normalized);
+      setUpdatedAt(payload.updated_at ?? null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError("Fehler beim Speichern der Niveauregeln.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const applyA12Seed = () => {
+    setData((prev) => ({
+      ...prev,
+      "A1.2": {
+        ...createEmptyLevelData(),
+        ...A1_2_SEED_DATA,
+      },
+    }));
+  };
+
+  const applyA12SeedAndSave = async () => {
+    const merged: Record<Level, LevelData> = {
+      ...data,
+      "A1.2": {
+        ...createEmptyLevelData(),
+        ...A1_2_SEED_DATA,
+      },
+    };
+    setData(merged);
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const response = await fetch("/api/niveauregeln", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: merged }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const normalized = normalizeStoredData(payload.data);
+      setData(normalized);
+      setSavedData(normalized);
+      setUpdatedAt(payload.updated_at ?? null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError("Fehler beim Speichern der Niveauregeln.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const applyA21Seed = () => {
+    setData((prev) => ({
+      ...prev,
+      "A2.1": {
+        ...createEmptyLevelData(),
+        ...A2_1_SEED_DATA,
+      },
+    }));
+  };
+
+  const applyA21SeedAndSave = async () => {
+    const merged: Record<Level, LevelData> = {
+      ...data,
+      "A2.1": {
+        ...createEmptyLevelData(),
+        ...A2_1_SEED_DATA,
+      },
+    };
+    setData(merged);
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const response = await fetch("/api/niveauregeln", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: merged }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const normalized = normalizeStoredData(payload.data);
+      setData(normalized);
+      setSavedData(normalized);
+      setUpdatedAt(payload.updated_at ?? null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError("Fehler beim Speichern der Niveauregeln.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const applyA22Seed = () => {
+    setData((prev) => ({
+      ...prev,
+      "A2.2": {
+        ...createEmptyLevelData(),
+        ...A2_2_SEED_DATA,
+      },
+    }));
+  };
+
+  const applyA22SeedAndSave = async () => {
+    const merged: Record<Level, LevelData> = {
+      ...data,
+      "A2.2": {
+        ...createEmptyLevelData(),
+        ...A2_2_SEED_DATA,
+      },
+    };
+    setData(merged);
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const response = await fetch("/api/niveauregeln", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: merged }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const normalized = normalizeStoredData(payload.data);
+      setData(normalized);
+      setSavedData(normalized);
+      setUpdatedAt(payload.updated_at ?? null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError("Fehler beim Speichern der Niveauregeln.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const applyB11Seed = () => {
+    setData((prev) => ({
+      ...prev,
+      "B1.1": {
+        ...createEmptyLevelData(),
+        ...B1_1_SEED_DATA,
+      },
+    }));
+  };
+
+  const applyB11SeedAndSave = async () => {
+    const merged: Record<Level, LevelData> = {
+      ...data,
+      "B1.1": {
+        ...createEmptyLevelData(),
+        ...B1_1_SEED_DATA,
+      },
+    };
+    setData(merged);
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const response = await fetch("/api/niveauregeln", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: merged }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const normalized = normalizeStoredData(payload.data);
+      setData(normalized);
+      setSavedData(normalized);
+      setUpdatedAt(payload.updated_at ?? null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError("Fehler beim Speichern der Niveauregeln.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const applyB12Seed = () => {
+    setData((prev) => ({
+      ...prev,
+      "B1.2": {
+        ...createEmptyLevelData(),
+        ...B1_2_SEED_DATA,
+      },
+    }));
+  };
+
+  const applyB12SeedAndSave = async () => {
+    const merged: Record<Level, LevelData> = {
+      ...data,
+      "B1.2": {
+        ...createEmptyLevelData(),
+        ...B1_2_SEED_DATA,
+      },
+    };
+    setData(merged);
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const response = await fetch("/api/niveauregeln", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: merged }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "Fehler beim Speichern.");
+        return;
+      }
+      const normalized = normalizeStoredData(payload.data);
+      setData(normalized);
+      setSavedData(normalized);
+      setUpdatedAt(payload.updated_at ?? null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError("Fehler beim Speichern der Niveauregeln.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveRules = async () => {
@@ -2960,12 +4372,112 @@ export default function NiveauregelnPage() {
         </div>
 
         {activeLevel === "A1.1" ? (
-          <button
-            onClick={applyA11Seed}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
-          >
-            Vorbefüllen (Schritte plus neu CH 1)
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyA11Seed}
+              disabled={saving}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Vorbefüllen (Vorschau)
+            </button>
+            <button
+              onClick={applyA11SeedAndSave}
+              disabled={saving}
+              className="rounded-md border border-zinc-400 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+            >
+              {saving ? "Speichere…" : "Neu befüllen + Speichern"}
+            </button>
+          </div>
+        ) : null}
+        {activeLevel === "A1.2" ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyA12Seed}
+              disabled={saving}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Vorbefüllen (Vorschau)
+            </button>
+            <button
+              onClick={applyA12SeedAndSave}
+              disabled={saving}
+              className="rounded-md border border-zinc-400 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+            >
+              {saving ? "Speichere…" : "Neu befüllen + Speichern"}
+            </button>
+          </div>
+        ) : null}
+        {activeLevel === "A2.1" ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyA21Seed}
+              disabled={saving}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Vorbefüllen (Vorschau)
+            </button>
+            <button
+              onClick={applyA21SeedAndSave}
+              disabled={saving}
+              className="rounded-md border border-zinc-400 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+            >
+              {saving ? "Speichere…" : "Neu befüllen + Speichern"}
+            </button>
+          </div>
+        ) : null}
+        {activeLevel === "A2.2" ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyA22Seed}
+              disabled={saving}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Vorbefüllen (Vorschau)
+            </button>
+            <button
+              onClick={applyA22SeedAndSave}
+              disabled={saving}
+              className="rounded-md border border-zinc-400 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+            >
+              {saving ? "Speichere…" : "Neu befüllen + Speichern"}
+            </button>
+          </div>
+        ) : null}
+        {activeLevel === "B1.1" ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyB11Seed}
+              disabled={saving}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Vorbefüllen (Vorschau)
+            </button>
+            <button
+              onClick={applyB11SeedAndSave}
+              disabled={saving}
+              className="rounded-md border border-zinc-400 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+            >
+              {saving ? "Speichere…" : "Neu befüllen + Speichern"}
+            </button>
+          </div>
+        ) : null}
+        {activeLevel === "B1.2" ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={applyB12Seed}
+              disabled={saving}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Vorbefüllen (Vorschau)
+            </button>
+            <button
+              onClick={applyB12SeedAndSave}
+              disabled={saving}
+              className="rounded-md border border-zinc-400 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+            >
+              {saving ? "Speichere…" : "Neu befüllen + Speichern"}
+            </button>
+          </div>
         ) : null}
       </div>
 

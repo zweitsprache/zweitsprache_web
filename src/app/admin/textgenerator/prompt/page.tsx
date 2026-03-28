@@ -13,7 +13,8 @@ const SHORTCODES = [
   { code: "{{KONTEXTREGELN}}", desc: "Landeskundliche Regeln pro Handlungsfeld" },
   { code: "{{TEXTSORTE}}", desc: "Textsorte-Anweisung" },
   { code: "{{LAENGE}}", desc: "Längensteuerung (dynamisch nach Inhalt/Textsorte)" },
-  { code: "{{NIVEAUREGELN}}", desc: "Detaillierte Grammatik-/Wortschatzregeln für das Niveau" },
+  { code: "{{NIVEAUREGELN}}", desc: "Detaillierte Grammatik-/Wortschatzregeln für das Niveau (aus DB Niveauregeln, Fallback: hardcoded)" },
+  { code: "{{WORTLISTE}}", desc: "Top-Wörter für das gewählte Handlungsfeld+Niveau (aus Wortlisten-Relevanzscores)" },
   { code: "{{TITEL_NEUTRAL}}", desc: "'; neutral formulieren' für Sachtexte, leer für persönliche" },
   { code: "{{REFERENZSAETZE}}", desc: "Referenzsätze aus der Satzbank als Stilvorlage" },
 ];
