@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, Check, Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,58 +8,83 @@ import { Button } from "@/components/ui/button";
 const LEVELS = ["A1.1", "A1.2", "A2.1", "A2.2", "B1.1", "B1.2"] as const;
 type Level = (typeof LEVELS)[number];
 
-const TEXT_TYPES = [
-  { value: "erzaehlung", label: "Erzählung" },
-  { value: "dialog", label: "Dialog" },
-  { value: "email", label: "E-Mail" },
-  { value: "brief", label: "Brief" },
-  { value: "tagebuch", label: "Tagebucheintrag" },
-  { value: "beschreibung", label: "Sachtext / Beschreibung" },
-  { value: "anleitung", label: "Anleitung" },
-  { value: "nachricht", label: "Nachricht / Meldung" },
-  { value: "bericht", label: "Bericht" },
-  { value: "inserat", label: "Inserat / Anzeige" },
-  { value: "portraet", label: "Porträt" },
-  { value: "kommentar", label: "Kommentar (ab B1.1)" },
-] as const;
-
-const TOPIC_SUGGESTIONS = [
-  "Einkaufen", "Familie", "Schule", "Reisen", "Essen",
-  "Arztbesuch", "Wohnung", "Arbeit", "Freizeit", "Wetter",
-];
+type Textsorte = {
+  key: string;
+  label: string;
+  gruppe: string;
+};
 
 export default function TextgeneratorPage() {
-  const [level, setLevel] = useState<Level>("A1.1");
+  const [selectedLevels, setSelectedLevels] = useState<Set<Level>>(new Set(["A1.1"]));
   const [topic, setTopic] = useState("");
-  const [textType, setTextType] = useState<string>("erzaehlung");
+  const [textType, setTextType] = useState<string>("");
+  const [textsorten, setTextsorten] = useState<Textsorte[]>([]);
   const [region, setRegion] = useState<"ch" | "de">("ch");
-  const [address, setAddress] = useState<"man" | "sie">("man");
+  const [handlungsfeld, setHandlungsfeld] = useState<string>("");
+  const [handlungsfelder, setHandlungsfelder] = useState<{ code: string; name: string }[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/handlungsfelder").then((r) => r.json()),
+      fetch("/api/textsorten").then((r) => r.json()),
+    ]).then(([hfData, tsData]) => {
+      if (Array.isArray(hfData) && hfData.length > 0) {
+        setHandlungsfelder(hfData);
+        setHandlungsfeld(hfData[0].code);
+      }
+      if (Array.isArray(tsData) && tsData.length > 0) {
+        setTextsorten(tsData);
+        setTextType(tsData[0].key);
+      }
+    }).catch(() => {});
+  }, []);
   const [count, setCount] = useState(1);
-  const [results, setResults] = useState<{ text: string; matchCount: number }[]>([]);
+  const [results, setResults] = useState<{ text: string; matchCount: number; level: string }[]>([]);
   const [prompt, setPrompt] = useState<{ system: string; user: string } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
+  const toggleLevel = (l: Level) => {
+    setSelectedLevels((prev) => {
+      const next = new Set(prev);
+      if (next.has(l)) {
+        if (next.size > 1) next.delete(l);
+      } else {
+        next.add(l);
+      }
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setSelectedLevels((prev) =>
+      prev.size === LEVELS.length ? new Set([LEVELS[0]]) : new Set(LEVELS)
+    );
+  };
+
   const generate = async () => {
-    if (!topic.trim()) return;
+    if (!topic.trim() || !handlungsfeld || selectedLevels.size === 0) return;
     setGenerating(true);
     setError(null);
     setResults([]);
     setPrompt(null);
 
     try {
-      const promises = Array.from({ length: count }, () =>
-        fetch("/api/satzbank/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ level, topic, region, textType, address }),
-        }).then(async (res) => {
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error);
-          if (data.prompt) setPrompt(data.prompt);
-          return { text: data.text, matchCount: data.matchCount };
-        })
+      const levels = Array.from(selectedLevels);
+      const promises = levels.flatMap((level) =>
+        Array.from({ length: count }, () =>
+          fetch("/api/satzbank/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level, topic, region, textType, handlungsfeld }),
+          }).then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            if (data.prompt) setPrompt(data.prompt);
+            return { text: data.text, matchCount: data.matchCount, level: data.level as string };
+          })
+        )
       );
       const texts = await Promise.all(promises);
       setResults(texts);
@@ -96,13 +121,42 @@ export default function TextgeneratorPage() {
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium">Niveau</label>
+            <div className="flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
+              {LEVELS.map((l, i) => (
+                <button
+                  key={l}
+                  onClick={() => toggleLevel(l)}
+                  className={`${i > 0 ? "border-l border-zinc-200 dark:border-zinc-700" : ""} px-2.5 py-1.5 text-sm font-medium transition-colors ${
+                    selectedLevels.has(l)
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                      : "bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+              <button
+                onClick={toggleAll}
+                className={`border-l border-zinc-200 px-2.5 py-1.5 text-sm font-medium transition-colors dark:border-zinc-700 ${
+                  selectedLevels.size === LEVELS.length
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    : "bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                }`}
+              >
+                Alle
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">Handlungsfeld</label>
             <select
-              value={level}
-              onChange={(e) => setLevel(e.target.value as Level)}
-              className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium dark:border-zinc-700 dark:bg-zinc-900"
+              value={handlungsfeld}
+              onChange={(e) => setHandlungsfeld(e.target.value)}
+              className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
             >
-              {LEVELS.map((l) => (
-                <option key={l} value={l}>{l}</option>
+              <option value="" disabled>Auswahl</option>
+              {[...handlungsfelder].sort((a, b) => a.name.localeCompare(b.name, "de")).map((h) => (
+                <option key={h.code} value={h.code}>{h.name}</option>
               ))}
             </select>
           </div>
@@ -113,37 +167,20 @@ export default function TextgeneratorPage() {
               onChange={(e) => setTextType(e.target.value)}
               className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
             >
-              {TEXT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+              {Object.entries(
+                textsorten.reduce<Record<string, Textsorte[]>>((acc, t) => {
+                  if (!acc[t.gruppe]) acc[t.gruppe] = [];
+                  acc[t.gruppe].push(t);
+                  return acc;
+                }, {})
+              ).map(([gruppe, items]) => (
+                <optgroup key={gruppe} label={gruppe}>
+                  {items.map((t) => (
+                    <option key={t.key} value={t.key}>{t.label}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">Ansprache</label>
-            <div className="flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
-              <button
-                onClick={() => setAddress("man")}
-                className={`px-2.5 py-1.5 text-sm transition-colors ${
-                  address === "man"
-                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                    : "bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                }`}
-                title="Neutral (man)"
-              >
-                man
-              </button>
-              <button
-                onClick={() => setAddress("sie")}
-                className={`border-l border-zinc-200 px-2.5 py-1.5 text-sm transition-colors dark:border-zinc-700 ${
-                  address === "sie"
-                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                    : "bg-white text-zinc-600 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800"
-                }`}
-                title="Direkt (Sie)"
-              >
-                Sie
-              </button>
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium">Region</label>
@@ -201,24 +238,7 @@ export default function TextgeneratorPage() {
           />
         </div>
 
-        {/* Topic suggestions */}
-        <div className="flex flex-wrap gap-1.5">
-          {TOPIC_SUGGESTIONS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTopic(t)}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                topic === t
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-
-        <Button onClick={generate} disabled={generating || !topic.trim()}>
+        <Button onClick={generate} disabled={generating || !topic.trim() || !handlungsfeld || selectedLevels.size === 0}>
           {generating && <Loader2 className="size-4 animate-spin" />}
           {generating ? "Generiere..." : "Text generieren"}
         </Button>
@@ -256,7 +276,7 @@ export default function TextgeneratorPage() {
             <div key={i} className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
               {results.length > 1 && (
                 <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-2 dark:border-zinc-800">
-                  <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Text {i + 1}</span>
+                  <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{r.level} • Text {i + 1}</span>
                   <Button size="xs" variant="ghost" onClick={() => copyText(i)}>
                     {copiedIndex === i ? <Check className="size-3" /> : <Copy className="size-3" />}
                     {copiedIndex === i ? "Kopiert" : "Kopieren"}

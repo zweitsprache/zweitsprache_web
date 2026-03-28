@@ -14,6 +14,8 @@ pnpm dev
 bun dev
 ```
 
+`npm run dev` uses Webpack with polling because the non-polling Next.js watcher path has been unreliable in this workspace. Native OS file events do work here; the instability appears to be in Next.js dev watching rather than the filesystem itself. Use `npm run dev:native` to test Webpack without polling, or `npm run dev:turbo` to test Turbopack explicitly.
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.

@@ -56,43 +56,81 @@ Wortschatz: breitere Abstrakta, einfache Nominalisierungen (die Entscheidung, di
 NICHT VERWENDEN: Passiv Perfekt/Plusquamperfekt, komplexe Partizipialketten, unnötiger Fachjargon.`,
 };
 
-const LENGTH_RULES: Record<string, string> = {
-  "A1.1": "90–140 Wörter, 3 Absätze",
-  "A1.2": "130–180 Wörter, 3–4 Absätze",
-  "A2.1": "170–240 Wörter, 4 Absätze",
-  "A2.2": "220–320 Wörter, 4–5 Absätze",
-  "B1.1": "300–420 Wörter, 5 Absätze",
-  "B1.2": "380–520 Wörter, 5–6 Absätze",
+const LENGTH_GUIDANCE: Record<string, string> = {
+  "A1.1": "max. 3 Absätze; sehr kurze Texte (ca. 80–140 Wörter)",
+  "A1.2": "max. 3–4 Absätze; kurze Texte (ca. 100–180 Wörter)",
+  "A2.1": "max. 4 Absätze; kurze bis mittlere Texte (ca. 120–240 Wörter)",
+  "A2.2": "max. 4–5 Absätze; mittlere Texte (ca. 150–320 Wörter)",
+  "B1.1": "max. 5 Absätze; mittlere Texte (ca. 200–420 Wörter)",
+  "B1.2": "max. 5–6 Absätze; mittlere bis längere Texte (ca. 250–520 Wörter)",
 };
 
-const TEXT_TYPE_RULES: Record<string, string> = {
-  erzaehlung: "Erzählung/Blog: einfache Chronologie; klare Zeitmarker gemäss Niveau; Ich- oder Er/Sie-Form.",
-  dialog: "Interview/Dialog: Sprecherwechsel mit «Person A», «Person B» oder Namen; stufengerechte Fragen/Antworten. Für Dialoge gilt die Längensteuerung nicht – die Länge richtet sich nach dem natürlichen Dialogverlauf und der Pragmatik.",
-  email: "E-Mail: mit Anrede, Text und Gruss; informell bis neutral.",
-  brief: "Brief: mit Anrede, Text und Gruss; etwas formeller als eine E-Mail.",
-  tagebuch: "Tagebucheintrag: persönlich, in der Ich-Form, mit Datum; einfache Chronologie.",
-  beschreibung: "Sachtext/Beschreibung: klarer Lead; Absätze mit Themensätzen; neutrale Tonalität; Beispiele/Daten einfach; keine direkte Leseransprache.",
-  anleitung: "Anleitung: Schritt-für-Schritt, mit Imperativ oder man-Sätzen.",
-  nachricht: "Nachricht/Meldung: Beantwortung von W-Fragen (Wer/Was/Wo/Wann/Wie/Warum) in den ersten Sätzen, sachlich. Keine direkte Leseransprache.",
-  bericht: "Bericht: sachlicher Lead; Absätze mit Themensätzen; neutrale Tonalität; in der Vergangenheit. Keine direkte Leseransprache.",
-  inserat: "Inserat/Anzeige: kurz, prägnant, mit Stichpunkten.",
-  portraet: "Porträt: Person, Kontext, charakteristische Details; indirekte Rede erst ab A2.2.",
-  kommentar: "Kommentar (empfohlen ab B1.1): These – Begründung – Fazit; vorsichtige Bewertung, einfache Argumentationsmarker.",
-};
+// TEXT_TYPE_RULES removed — now fetched from DB (textsorten table)
+
+const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprache. Du schreibst Texte für Sprachlerner auf exakt dem CEFR-Niveau {{NIVEAU}}.
+
+═══ GLOBALE QUALITÄTSKRITERIEN ═══
+- Flüssigkeit und Lesbarkeit: klare, natürliche Sätze; kein Telegrafstil; stimmiger Rhythmus.
+- Kohäsion: thematische Fortschreibung, saubere Referenzen (Pronomen/Wiederaufnahmen), Konnektoren gemäss Niveau.
+- Erwachsenenrelevanz: alltags-, berufs- oder gesellschaftsnah; respektvoll, inklusiv, kultursensibel.
+- {{REGION}}
+- Wortschatz: bevorzugt hochfrequente, konkrete Lexik; kein unnötiger Jargon.
+- Fehlerfreiheit: Grammatik, Orthografie, Zeichensetzung korrekt.
+- Inklusive Sprache: bevorzugt neutrale Formen («Mitarbeitende», «Lehrpersonen») oder Gender durch «:» («Mitarbeiter:innen»).
+- Neutralität: keine bewertenden, romantisierenden, verniedlichenden oder moralisierenden Aussagen, es sei denn, vom Inhalt oder den Akteuren verlangt.
+- WICHTIG: Der Inhalt muss logisch und realistisch sein. Vermeide widersprüchliche Aussagen. Bei Dialogen: Wer fragt, weiss die Antwort noch nicht. Wer antwortet, gibt neue Information.
+
+═══ {{ANSPRACHE}} ═══
+{{HANDLUNGSFELD}}
+{{KONTEXTREGELN}}
+═══ TEXTSORTE ═══
+{{TEXTSORTE}}
+
+═══ LÄNGENSTEUERUNG ═══
+{{LAENGE}}
+
+═══ {{NIVEAUREGELN}} ═══
+
+═══ SPEZIFISCHE ANWEISUNGEN ═══
+- Verwende Schweizer Anredeformat in Korrespondenz (Brief, E-Mail): [Anrede] Name ohne Komma, dann Leerzeile, dann Korrespondenzbeginn in Grossbuchstaben.
+- Zulässige Korrespondenzanreden: «Hallo» (informell), «Guten Tag», «Guten Tag Frau [Name]…», «Guten Tag Herr [Name]…», «Hallo [Vorname]».
+- Zulässige Grussformeln (angepasst an Inhalt): «Freundliche Grüsse», «Viele Grüsse», «Herzliche Grüsse», «Liebe Grüsse».
+
+═══ KOHÄSION UND STIL ═══
+- Referenz: konsistente Nennung/Ersetzung (Nomen → Pronomen/Synonym) ohne Ambiguität.
+- Themenführung: pro Absatz ein klarer Fokus; am Ende kurzer Abschluss-/Ausblicksatz.
+- Klang: natürliche Prosodie; keine übermässigen Wiederholungen; moderate Variation bei Satzanfängen.
+
+═══ AUSGABEFORMAT ═══
+- Titel (prägnant, 3–8 Wörter{{TITEL_NEUTRAL}})
+- Untertitel/Teaser (1 Satz, max. 140 Zeichen)
+- Haupttext in Absätzen (Länge passend zu Textsorte und Inhalt)
+- Nur den Text liefern (keine Aufgaben, keine Meta-Erklärungen, kein Markdown)
+
+═══ QUALITÄTSSICHERUNG (still, nicht ausgeben) ═══
+- Niveau-Check: Jeder Satz erfüllt die Merkmale der Stufe (keine höheren Strukturen).
+- Präteritum-Check: Bis und mit A2.2 KEINE Präteritumformen ausser «war» und «hatte». Andere Verben im Präteritum erst ab B1.1.
+- Umfangs-Check: Textlänge realistisch für Textsorte und Inhalt; Richtwerte nicht überschreiten.
+- Lexik-Check: seltene Wörter durch häufigere Synonyme ersetzen (Bedeutung wahren).
+- DE-CH-Check: ss statt ß; Terminologie konsistent.
+- Ansprache-Check: gewählte Leseransprache durchgehend, inkl. Titel und Teaser.
+
+═══ REFERENZ-SÄTZE auf Niveau {{NIVEAU}} (als Stilvorlage) ═══
+{{REFERENZSAETZE}}`;
 
 export async function POST(request: Request) {
   try {
-    const { level, topic, region, textType, address } = (await request.json()) as {
+    const { level, topic, region, textType, handlungsfeld } = (await request.json()) as {
       level: string;
       topic: string;
       region?: "ch" | "de";
       textType?: string;
-      address?: "sie" | "man";
+      handlungsfeld: string;
     };
 
-    if (!level || !topic) {
+    if (!level || !topic || !handlungsfeld) {
       return NextResponse.json(
-        { error: "Niveau und Thema sind erforderlich." },
+        { error: "Niveau, Thema und Handlungsfeld sind erforderlich." },
         { status: 400 }
       );
     }
@@ -113,6 +151,67 @@ export async function POST(request: Request) {
 
     // 2. Retrieve matching sentences from the bank
     const supabase = createClient(await cookies());
+
+    // Resolve Handlungsfeld name, kontextregeln, and prompt template
+    let handlungsfeldName: string | null = null;
+    let kontextregeln: string[] = [];
+    const fetchPromises: Promise<void>[] = [];
+    let promptTemplate: string | null = null;
+    let textsorteData: { anweisung: string; is_personal: boolean; is_dialog: boolean } | null = null as { anweisung: string; is_personal: boolean; is_dialog: boolean } | null;
+
+    // Fetch prompt template
+    fetchPromises.push(
+      Promise.resolve(
+        supabase
+          .from("prompt_templates")
+          .select("template")
+          .eq("id", "default")
+          .single()
+      ).then(({ data }) => {
+        if (data) promptTemplate = data.template;
+      })
+    );
+
+    // Fetch textsorte from DB
+    const selectedTextType = textType ?? "email";
+    fetchPromises.push(
+      Promise.resolve(
+        supabase
+          .from("textsorten")
+          .select("anweisung, is_personal, is_dialog")
+          .eq("key", selectedTextType)
+          .single()
+      ).then(({ data }) => {
+        if (data) textsorteData = data;
+      })
+    );
+
+    if (handlungsfeld) {
+      fetchPromises.push(
+        Promise.all([
+          Promise.resolve(
+            supabase
+              .from("handlungsfelder")
+              .select("name")
+              .eq("code", handlungsfeld)
+              .single()
+          ),
+          Promise.resolve(
+            supabase
+              .from("kontextregeln")
+              .select("regel")
+              .eq("handlungsfeld_code", handlungsfeld)
+              .order("sort_order")
+          ),
+        ]).then(([{ data: hf }, { data: regeln }]) => {
+          if (hf) handlungsfeldName = hf.name;
+          if (regeln?.length) kontextregeln = regeln.map((r: { regel: string }) => r.regel);
+        })
+      );
+    }
+
+    await Promise.all(fetchPromises);
+
     const { data: matches, error: matchError } = await supabase.rpc(
       "match_sentences",
       {
@@ -147,77 +246,68 @@ export async function POST(request: Request) {
       .join("\n");
 
     const isSwiss = (region ?? "ch") === "ch";
-    const selectedAddress = address ?? "man";
-    const selectedTextType = textType ?? "erzaehlung";
 
     const regionRule = isSwiss
       ? "DE-CH-Standard: ss statt ß; CH-Varianz zulässig («Spital», «Tram», «Billett», «Velo», «Trottoir», «parkieren»)."
       : "Bundesdeutsches Hochdeutsch mit ß gemäss neuer Rechtschreibung.";
 
-    const addressRule = selectedAddress === "sie"
-      ? `Leseransprache «direkt-sie»:
-- Pronomen/Beugung: Sie/Ihnen/Ihr(e), Verbform 3. Person Plural («Sie können…», «Sie bringen… zurück»).
-- Stil: höflich, zugewandt; auf A1.1 kein Imperativ (stattdessen Aussagesätze/Ja-Nein-Fragen).
-- Durchgehend «Sie» in Titel, Teaser, Text und Glossar.`
-      : `Leseransprache «neutral-man»:
+    // Use DB flags for personal/dialog, with regex fallback for freeform CSV values
+    const personalPatterns = /dialog|erz[äa]hl|tagebuch|e-?mail|brief|nachricht|interview|gespr[äa]ch|chat|sms|messenger/i;
+    const isPersonalTextType = textsorteData?.is_personal ?? personalPatterns.test(selectedTextType);
+    const isDialog = textsorteData?.is_dialog ?? /dialog|interview|gespr[äa]ch/i.test(selectedTextType);
+
+    const addressRule = isPersonalTextType
+      ? `Leseransprache:
+- Wähle die Perspektive, die zur Textsorte passt (Ich-Form für Tagebuch/E-Mail/Brief, Ich/Du/Er-Sie für Erzählung, Sprecherwechsel für Dialog usw.).
+- Keine erzwungene «man»-Formulierung; natürliche Pronomen verwenden.
+- A1.1/A1.2: kein Imperativ.`
+      : `Leseransprache «neutral-man» (für Sachtexte, Beschreibungen, Berichte, Anleitungen):
 - Pronomen/Beugung: man, Verbform 3. Person Singular («man kann…», «man bringt… zurück»).
 - Possessiv auf A1: vermeide «sein/ihr» → nutze «die eigene …/das eigene …» oder Umschreibungen.
 - Keine direkte Anrede, keine Leserfragen.
 - A1.1/A1.2: kein Imperativ; bei «neutral-man» möglichst ohne Passiv, stattdessen «man + Modalverb».
-- Durchgehend «man» in Titel, Teaser, Text und Glossar.`;
+- Durchgehend «man» in Titel, Teaser und Text.`;
 
-    const textTypeRule = TEXT_TYPE_RULES[selectedTextType] ?? TEXT_TYPE_RULES.erzaehlung;
+    const textTypeRule = textsorteData?.anweisung || `Textsorte «${selectedTextType}»: Schreibe einen Text dieser Textsorte mit stufengerechten Mitteln.`;
     const levelRule = LEVEL_RULES[level];
-    const lengthRule = LENGTH_RULES[level];
-    const isDialog = selectedTextType === "dialog";
+    const lengthRule = LENGTH_GUIDANCE[level];
 
-    const systemPrompt = `Du bist ein Experte für Deutsch als Fremdsprache. Du schreibst Texte für Sprachlerner auf exakt dem CEFR-Niveau ${level}.
+    const handlungsfeldSection = handlungsfeldName
+      ? `═══ HANDLUNGSFELD ═══\nDer Text bewegt sich im Handlungsfeld «${handlungsfeldName}». Wähle Situationen, Orte und Vokabular, die zu diesem Handlungsfeld passen.`
+      : "";
 
-═══ GLOBALE QUALITÄTSKRITERIEN ═══
-- Flüssigkeit und Lesbarkeit: klare, natürliche Sätze; kein Telegrafstil; stimmiger Rhythmus.
-- Kohäsion: thematische Fortschreibung, saubere Referenzen (Pronomen/Wiederaufnahmen), Konnektoren gemäss Niveau.
-- Erwachsenenrelevanz: alltags-, berufs- oder gesellschaftsnah; respektvoll, inklusiv, kultursensibel.
-- ${regionRule}
-- Wortschatz: bevorzugt hochfrequente, konkrete Lexik; kein unnötiger Jargon.
-- Fehlerfreiheit: Grammatik, Orthografie, Zeichensetzung korrekt.
-- Inklusive Sprache: bevorzugt neutrale Formen («Mitarbeitende», «Lehrpersonen») oder Gender durch «:» («Mitarbeiter:innen»).
-- Neutralität: keine bewertenden, romantisierenden, verniedlichenden oder moralisierenden Aussagen, es sei denn, vom Inhalt oder den Akteuren verlangt.
-- WICHTIG: Der Inhalt muss logisch und realistisch sein. Vermeide widersprüchliche Aussagen. Bei Dialogen: Wer fragt, weiss die Antwort noch nicht. Wer antwortet, gibt neue Information.
+    const kontextregelnSection = kontextregeln.length
+      ? `═══ KONTEXTREGELN ═══\nBeachte folgende landeskundliche Fakten für dieses Handlungsfeld:\n${kontextregeln.map((r) => `- ${r}`).join("\n")}`
+      : "";
 
-═══ ${addressRule} ═══
+    const lengthSection = isDialog
+      ? "Für Dialoge gilt die Längensteuerung nicht – die Länge richtet sich nach dem natürlichen Dialogverlauf und der Pragmatik."
+      : `Die Textlänge richtet sich primär nach Textsorte und Inhalt. Ein kurzes Anliegen (z. B. E-Mail wegen defekter Heizung) bleibt auch auf höheren Niveaus kurz – nur die sprachliche Komplexität steigt mit dem Niveau, nicht die Länge.\nRichtwerte für Niveau ${level}: ${lengthRule}.\nÜberschreite diese Richtwerte nicht, unterschreite sie aber gerne, wenn der Inhalt es verlangt.`;
 
-═══ TEXTSORTE ═══
-${textTypeRule}
+    const titelNeutral = isPersonalTextType ? "" : "; neutral formulieren";
 
-═══ LÄNGENSTEUERUNG ═══
-${isDialog ? "Für Dialoge gilt die Längensteuerung nicht – die Länge richtet sich nach dem natürlichen Dialogverlauf und der Pragmatik." : `${lengthRule}.`}
+    // Resolve shortcodes in prompt template
+    const shortcodes: Record<string, string> = {
+      "{{NIVEAU}}": level,
+      "{{REGION}}": regionRule,
+      "{{ANSPRACHE}}": addressRule,
+      "{{HANDLUNGSFELD}}": handlungsfeldSection,
+      "{{KONTEXTREGELN}}": kontextregelnSection,
+      "{{TEXTSORTE}}": textTypeRule,
+      "{{LAENGE}}": lengthSection,
+      "{{NIVEAUREGELN}}": levelRule,
+      "{{REFERENZSAETZE}}": examples,
+      "{{TITEL_NEUTRAL}}": titelNeutral,
+    };
 
-═══ ${levelRule} ═══
+    // Use DB template or fall back to hardcoded default
+    const template = promptTemplate ?? fallbackPromptTemplate;
+    const systemPrompt = Object.entries(shortcodes).reduce(
+      (prompt, [key, value]) => prompt.replaceAll(key, value),
+      template
+    );
 
-═══ KOHÄSION UND STIL ═══
-- Referenz: konsistente Nennung/Ersetzung (Nomen → Pronomen/Synonym) ohne Ambiguität.
-- Themenführung: pro Absatz ein klarer Fokus; am Ende kurzer Abschluss-/Ausblicksatz.
-- Klang: natürliche Prosodie; keine übermässigen Wiederholungen; moderate Variation bei Satzanfängen.
-
-═══ AUSGABEFORMAT ═══
-- Titel (prägnant, 3–8 Wörter${selectedAddress === "man" ? "; neutral formulieren" : ""})
-- Untertitel/Teaser (1 Satz, max. 140 Zeichen)
-- Haupttext in Absätzen gemäss Längensteuerung
-- Miniglossar mit 6–12 stufengerechten Einträgen (Lemma – einfache Erklärung/Beispiel)
-- Nur den Text liefern (keine Aufgaben, keine Meta-Erklärungen, kein Markdown)
-
-═══ QUALITÄTSSICHERUNG (still, nicht ausgeben) ═══
-- Niveau-Check: Jeder Satz erfüllt die Merkmale der Stufe (keine höheren Strukturen).
-- Präteritum-Check: Bis und mit A2.2 KEINE Präteritumformen ausser «war» und «hatte». Andere Verben im Präteritum erst ab B1.1.
-- Umfangs-Check: Wortzahl/Absatzzahl gemäss Längensteuerung.
-- Lexik-Check: seltene Wörter durch häufigere Synonyme ersetzen (Bedeutung wahren).
-- DE-CH-Check: ss statt ß; Terminologie konsistent.
-- Ansprache-Check: gewählte Leseransprache durchgehend, inkl. Titel/Teaser/Glossar.
-
-═══ REFERENZ-SÄTZE auf Niveau ${level} (als Stilvorlage) ═══
-${examples}`;
-
-    const userMessage = `Schreibe einen Text auf Niveau ${level} zum Thema «${topic}».`;
+    const userMessage = `Schreibe einen Text auf Niveau ${level} zum Thema «${topic}»${handlungsfeldName ? ` im Handlungsfeld «${handlungsfeldName}»` : ""}.`;
 
     // 4. Generate text with Claude
     const message = await anthropic.messages.create({
