@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { Copy, Check, Loader2, RefreshCw } from "lucide-react";
 
@@ -114,19 +115,31 @@ export default function TextgeneratorPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-12">
       {/* Hero */}
-      <div className="relative mb-8 h-32 w-full overflow-hidden rounded-xl bg-slate-700 sm:h-36 md:h-44">
-        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
+      <div className="relative h-48 w-full overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800 sm:h-56 md:h-64">
+        <Image
+          src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
+          alt="Textgenerator"
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/80 to-slate-900/20 p-6 sm:p-8">
+          <Link href="/tools" className="mb-4 inline-block text-sm text-zinc-300 hover:text-white">
+            ← Alle Tools
+          </Link>
           <h1 className="text-3xl font-bold text-white sm:text-4xl">Textgenerator</h1>
-          <p className="mt-2 text-lg text-slate-200">
+          <p className="mt-2 text-lg text-zinc-200">
             Niveaugerechte deutsche Texte generieren.
           </p>
         </div>
       </div>
 
-      {/* Input section */}
-      <div className="mb-8 space-y-4">
+      {/* Content + Sidebar */}
+      <div className="grid grid-cols-1 gap-12 py-12 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+        {/* Input section */}
+        <div className="mb-8 space-y-4">
 
         {/* Niveau — full width */}
         <div>
@@ -337,6 +350,35 @@ export default function TextgeneratorPage() {
           )}
         </div>
       )}
+        </div>
+
+        {/* Sidebar */}
+        <div>
+          <h2 className="mb-4 text-lg font-semibold">Weitere Tools</h2>
+          <Link
+            href="/tools/textkorrektor"
+            className="group block overflow-hidden rounded-lg border border-zinc-200 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+          >
+            <div className="relative h-36 bg-zinc-100 dark:bg-zinc-800">
+              <Image
+                src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
+                alt="Textkorrektor"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/60 to-transparent p-4">
+                <h3 className="text-base font-semibold text-white group-hover:underline">Textkorrektor</h3>
+                <p className="mt-0.5 text-xs text-zinc-200">Handgeschriebene Texte fotografieren und automatisch korrigieren</p>
+              </div>
+            </div>
+            <div className="p-3">
+              <span className="block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+                Öffnen
+              </span>
+            </div>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
