@@ -10,6 +10,14 @@ const tools = [
     image:
       "/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg",
   },
+  {
+    key: "textkorrektor",
+    href: "/tools/textkorrektor",
+    title: "Textkorrektor",
+    subtitle: "Handgeschriebene Texte fotografieren und automatisch korrigieren",
+    image:
+      "/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg",
+  },
 ];
 
 export default function ToolsPage() {

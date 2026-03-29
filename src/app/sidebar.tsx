@@ -21,6 +21,10 @@ const generatorItems = [
   { href: '/admin/textgenerator/wortlisten', label: 'Wortlisten' },
 ]
 
+const textkorrektorItems = [
+  { href: '/admin/textkorrektor', label: 'Profile' },
+]
+
 export function Sidebar() {
   const pathname = usePathname()
 
@@ -57,6 +61,10 @@ export function Sidebar() {
           Textgenerator
         </div>
         {generatorItems.map(renderLink)}
+        <div className="mb-1 mt-4 px-3 pt-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          Textkorrektor
+        </div>
+        {textkorrektorItems.map(renderLink)}
       </nav>
     </aside>
   )
