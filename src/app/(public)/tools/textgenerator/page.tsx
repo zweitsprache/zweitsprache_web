@@ -162,7 +162,7 @@ export default function TextgeneratorPage() {
         <div className="grid grid-cols-6 gap-4">
           <div className="col-span-2">
             <label className="mb-1.5 block text-sm font-medium">Handlungsfeld</label>
-            <Select value={handlungsfeld} onValueChange={setHandlungsfeld}>
+            <Select value={handlungsfeld} onValueChange={(v) => v !== null && setHandlungsfeld(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue>
                   {(v: string) => handlungsfelder.find((h) => h.code === v)?.name ?? <span className="text-muted-foreground">Auswahl</span>}
@@ -179,7 +179,7 @@ export default function TextgeneratorPage() {
           </div>
           <div className="col-span-2">
             <label className="mb-1.5 block text-sm font-medium">Textsorte</label>
-            <Select value={textType} onValueChange={setTextType}>
+            <Select value={textType} onValueChange={(v) => v !== null && setTextType(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue>
                   {(v: string) => textsorten.find((t) => t.key === v)?.label ?? <span className="text-muted-foreground">Auswahl</span>}
