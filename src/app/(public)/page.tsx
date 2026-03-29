@@ -86,7 +86,7 @@ export default async function HomePage() {
             fill
             className="object-cover"
           />
-          <div className="absolute inset-0 flex flex-col items-start justify-center bg-black/60 p-8 sm:p-12">
+          <div className="absolute inset-0 flex flex-col items-start justify-center bg-slate-900/60 p-8 sm:p-12">
             <h1 className="text-4xl font-bold text-white sm:text-5xl">
               DaZ einfach machen
             </h1>
@@ -137,7 +137,7 @@ export default async function HomePage() {
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4">
+                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/60 to-transparent p-4">
                       <h3 className="text-lg font-semibold text-white group-hover:underline">
                         {workshop.title}
                       </h3>
@@ -206,7 +206,7 @@ export default async function HomePage() {
                         fill
                         className="object-cover"
                       />
-                      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4">
+                      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/60 to-transparent p-4">
                         <h3 className="text-lg font-semibold text-white group-hover:underline">
                           {course.title}
                         </h3>

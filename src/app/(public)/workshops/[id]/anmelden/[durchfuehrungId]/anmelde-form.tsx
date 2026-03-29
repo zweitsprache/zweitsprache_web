@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
-function FloatingInput({
+function FieldInput({
   id,
   label,
   type = "text",
@@ -15,41 +16,25 @@ function FloatingInput({
   required?: boolean;
   autoComplete?: string;
 }) {
-  const [focused, setFocused] = useState(false);
-  const [value, setValue] = useState("");
-  const active = focused || value.length > 0;
-
   return (
-    <div className="relative">
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+        {label}
+        {required && <span className="text-red-500"> *</span>}
+      </label>
       <input
         id={id}
         name={id}
         type={type}
         required={required}
         autoComplete={autoComplete}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        className="peer w-full rounded-lg border border-zinc-300 bg-white px-4 pt-5 pb-2 text-sm outline-none transition-colors focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-100 dark:focus:ring-zinc-100"
-        placeholder=" "
+        className="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-zinc-600"
       />
-      <label
-        htmlFor={id}
-        className={`pointer-events-none absolute left-4 transition-all duration-200 ${
-          active
-            ? "top-1.5 text-[11px] font-medium text-zinc-500"
-            : "top-3.5 text-sm text-zinc-400"
-        }`}
-      >
-        {label}
-        {required && <span className="text-red-500"> *</span>}
-      </label>
     </div>
   );
 }
 
-function FloatingSelect({
+function FieldSelect({
   id,
   label,
   required = false,
@@ -62,95 +47,64 @@ function FloatingSelect({
   options: { value: string; label: string }[];
   onChange?: (value: string) => void;
 }) {
-  const [value, setValue] = useState("");
-  const active = value.length > 0;
-
   return (
-    <div className="relative">
-      <select
-        id={id}
-        name={id}
-        required={required}
-        value={value}
-        onChange={(e) => {
-          setValue(e.target.value);
-          onChange?.(e.target.value);
-        }}
-        className={`peer w-full appearance-none rounded-lg border border-zinc-300 bg-white px-4 pt-5 pb-2 text-sm outline-none transition-colors focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-100 dark:focus:ring-zinc-100 ${
-          !active ? "text-transparent" : ""
-        }`}
-      >
-        <option value="">Bitte auswählen</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <label
-        htmlFor={id}
-        className={`pointer-events-none absolute left-4 transition-all duration-200 ${
-          active
-            ? "top-1.5 text-[11px] font-medium text-zinc-500"
-            : "top-3.5 text-sm text-zinc-400"
-        }`}
-      >
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
-      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-        <svg
-          className="h-4 w-4 text-zinc-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
+      <div className="relative">
+        <select
+          id={id}
+          name={id}
+          required={required}
+          defaultValue=""
+          onChange={(e) => onChange?.(e.target.value)}
+          className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-white px-3 text-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+          <option value="" disabled>Bitte auswählen</option>
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+          <svg
+            className="h-4 w-4 text-zinc-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
     </div>
   );
 }
 
-function FloatingTextarea({
+function FieldTextarea({
   id,
   label,
+  hideLabel = false,
 }: {
   id: string;
   label: string;
+  hideLabel?: boolean;
 }) {
-  const [focused, setFocused] = useState(false);
-  const [value, setValue] = useState("");
-  const active = focused || value.length > 0;
-
   return (
-    <div className="relative">
+    <div>
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "mb-1.5 block text-sm font-medium"}>
+        {label}
+      </label>
       <textarea
         id={id}
         name={id}
         rows={4}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        className="peer w-full rounded-lg border border-zinc-300 bg-white px-4 pt-6 pb-2 text-sm outline-none transition-colors focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:border-zinc-100 dark:focus:ring-zinc-100"
-        placeholder=" "
+        className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-zinc-600"
       />
-      <label
-        htmlFor={id}
-        className={`pointer-events-none absolute left-4 transition-all duration-200 ${
-          active
-            ? "top-1.5 text-[11px] font-medium text-zinc-500"
-            : "top-3.5 text-sm text-zinc-400"
-        }`}
-      >
-        {label}
-      </label>
     </div>
   );
 }
@@ -164,6 +118,8 @@ export function AnmeldeForm({
 }) {
   const [rechnungsTyp, setRechnungsTyp] = useState("");
   const [einwilligung, setEinwilligung] = useState(false);
+  const [agb, setAgb] = useState(false);
+  const [formValid, setFormValid] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   if (submitted) {
@@ -187,10 +143,34 @@ export function AnmeldeForm({
         e.preventDefault();
         setSubmitted(true);
       }}
+      onChange={(e) => setFormValid(e.currentTarget.checkValidity())}
       className="space-y-10"
     >
       <input type="hidden" name="workshop_id" value={workshopId} />
       <input type="hidden" name="durchfuehrung_id" value={durchfuehrungId} />
+
+      {/* AGB */}
+      <label className="flex items-start gap-3 cursor-pointer normal-case">
+        <input
+          type="checkbox"
+          name="agb"
+          required
+          checked={agb}
+          onChange={(e) => setAgb(e.target.checked)}
+          className="mt-0.5 h-5 w-5 rounded border-zinc-300 accent-zinc-900 dark:accent-zinc-100"
+        />
+        <span className="text-sm leading-relaxed">
+          Ich melde mich verbindlich an und habe die{" "}
+          <a
+            href="/agb"
+            target="_blank"
+            className="font-medium underline underline-offset-2 hover:text-zinc-600"
+          >
+            AGB für Weiterbildungsveranstaltungen
+          </a>{" "}
+          zur Kenntnis genommen.<span className="text-red-500"> *</span>
+        </span>
+      </label>
 
       {/* Persönliche Angaben */}
       <fieldset>
@@ -199,7 +179,7 @@ export function AnmeldeForm({
         </legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2 sm:max-w-[calc(50%-0.5rem)]">
-            <FloatingSelect
+            <FieldSelect
               id="anrede"
               label="Anrede"
               required
@@ -210,43 +190,42 @@ export function AnmeldeForm({
               ]}
             />
           </div>
-          <FloatingInput
+          <FieldInput
             id="vorname"
             label="Vorname"
             required
             autoComplete="given-name"
           />
-          <FloatingInput
+          <FieldInput
             id="name"
             label="Name"
             required
             autoComplete="family-name"
           />
-          <FloatingInput
+          <FieldInput
             id="strasse"
             label="Strasse / Nr."
             required
             autoComplete="street-address"
           />
-          <FloatingInput
+          <FieldInput
             id="plz_ort"
             label="PLZ / Ort"
             required
             autoComplete="postal-code"
           />
-          <FloatingInput
-            id="mobiltelefon"
-            label="Mobiltelefon"
-            type="tel"
-            required
-            autoComplete="tel"
-          />
-          <FloatingInput
+          <FieldInput
             id="email"
             label="E-Mail"
             type="email"
             required
             autoComplete="email"
+          />
+          <FieldInput
+            id="mobiltelefon"
+            label="Mobiltelefon"
+            type="tel"
+            autoComplete="tel"
           />
         </div>
       </fieldset>
@@ -258,7 +237,7 @@ export function AnmeldeForm({
         </legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2 sm:max-w-[calc(50%-0.5rem)]">
-            <FloatingSelect
+            <FieldSelect
               id="rechnungsadresse_typ"
               label="Rechnungsadresse"
               required
@@ -271,20 +250,20 @@ export function AnmeldeForm({
           </div>
           {rechnungsTyp === "firma" && (
             <>
-              <FloatingInput id="firma" label="Firma / Organisation" />
-              <FloatingInput id="abteilung" label="Abteilung / Kontakt" />
-              <FloatingInput
+              <FieldInput id="firma" label="Firma / Organisation" />
+              <FieldInput id="abteilung" label="Abteilung / Kontakt" />
+              <FieldInput
                 id="rechnung_strasse"
                 label="Strasse / Nr."
                 autoComplete="street-address"
               />
-              <FloatingInput
+              <FieldInput
                 id="rechnung_plz_ort"
                 label="PLZ / Ort"
                 autoComplete="postal-code"
               />
               <div className="sm:col-span-2 sm:max-w-[calc(50%-0.5rem)]">
-                <FloatingInput
+                <FieldInput
                   id="rechnung_email"
                   label="E-Mail"
                   type="email"
@@ -296,13 +275,19 @@ export function AnmeldeForm({
         </div>
       </fieldset>
 
-      {/* Datenschutz & Bemerkungen */}
+      {/* Bemerkungen */}
+      <fieldset>
+        <legend className="mb-4 text-xl font-bold">Bemerkungen</legend>
+        <FieldTextarea id="bemerkungen" label="Bemerkungen" hideLabel />
+      </fieldset>
+
+      {/* Datenschutz */}
       <fieldset>
         <legend className="mb-4 text-xl font-bold">
           Datenschutz
         </legend>
         <div className="space-y-4">
-          <label className="flex items-start gap-3 cursor-pointer">
+          <label className="flex items-start gap-3 cursor-pointer normal-case">
             <input
               type="checkbox"
               name="einwilligung"
@@ -324,18 +309,14 @@ export function AnmeldeForm({
               <span className="text-red-500"> *</span>
             </span>
           </label>
-          <FloatingTextarea id="bemerkungen" label="Bemerkungen" />
         </div>
       </fieldset>
 
       {/* Submit */}
       <div>
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-zinc-900 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus:ring-zinc-100 sm:w-auto"
-        >
+        <Button type="submit" className="w-full" disabled={!formValid}>
           Anmeldung absenden
-        </button>
+        </Button>
       </div>
     </form>
   );

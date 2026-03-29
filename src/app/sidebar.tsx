@@ -11,12 +11,13 @@ const contentItems = [
 ]
 
 const generatorItems = [
-  { href: '/admin/textgenerator', label: 'Textgenerator' },
+  { href: '/tools/textgenerator', label: 'Textgenerator' },
   { href: '/admin/textgenerator/bulk', label: 'Bulk-Generator' },
   { href: '/admin/textgenerator/prompt', label: 'Prompt' },
   { href: '/admin/textgenerator/textsorten', label: 'Textsorten' },
   { href: '/admin/textgenerator/niveauregeln', label: 'Niveauregeln' },
   { href: '/admin/textgenerator/kontextregeln', label: 'Kontextregeln' },
+  { href: '/admin/textgenerator/hf-kontext', label: 'HF Strukturkontext' },
   { href: '/admin/textgenerator/wortlisten', label: 'Wortlisten' },
 ]
 
@@ -24,8 +25,7 @@ export function Sidebar() {
   const pathname = usePathname()
 
   const renderLink = (item: { href: string; label: string }) => {
-    const isActive = pathname === item.href || (item.href !== '/admin/textgenerator' && pathname.startsWith(item.href))
-      || (item.href === '/admin/textgenerator' && pathname === '/admin/textgenerator')
+    const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
     return (
       <Link
         key={item.href}

@@ -10,6 +10,7 @@ const SHORTCODES = [
   { code: "{{REGION}}", desc: "Regionale Sprachvariante (CH/DE)" },
   { code: "{{ANSPRACHE}}", desc: "Ansprechregel (persönlich oder neutral-man)" },
   { code: "{{HANDLUNGSFELD}}", desc: "Handlungsfeld-Abschnitt (nur wenn gewählt)" },
+  { code: "{{STRUKTURKONTEXT}}", desc: "Subdomain-Faktenwissen: Akteure, Dokumente, Terminologie, Fehlervermeidung (aus HF Strukturkontext JSON)" },
   { code: "{{KONTEXTREGELN}}", desc: "Landeskundliche Regeln pro Handlungsfeld" },
   { code: "{{TEXTSORTE}}", desc: "Textsorte-Anweisung" },
   { code: "{{LAENGE}}", desc: "Längensteuerung (dynamisch nach Inhalt/Textsorte)" },

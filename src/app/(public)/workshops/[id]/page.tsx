@@ -116,7 +116,7 @@ export default async function WorkshopPublicPage({
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/20 p-6 sm:p-8">
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/80 to-slate-900/20 p-6 sm:p-8">
             <Link
               href="/workshops"
               className="mb-4 inline-block text-sm text-zinc-300 hover:text-white"

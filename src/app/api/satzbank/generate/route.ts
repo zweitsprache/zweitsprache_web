@@ -322,6 +322,143 @@ function formatWortliste(words: Array<{ wort: string; score: number }>): string 
 
 // TEXT_TYPE_RULES removed — now fetched from DB (textsorten table)
 
+type TextsorteData = {
+  is_personal: boolean;
+  is_dialog: boolean;
+  label: string | null;
+  gruppe: string | null;
+  register: string | null;
+  funktion: string[] | null;
+  perspektive: string | null;
+  textaufbau: string[] | null;
+  typische_sprachhandlungen: string[] | null;
+  typische_konnektoren: string[] | null;
+  textlaenge_richtwert: string | null;
+  layout_merkmale: string[] | null;
+  adressat: string | null;
+  signalwoerter: string[] | null;
+};
+
+function buildTextsorteGuideline(data: TextsorteData | null, fallbackKey: string): string {
+  if (!data) return `Textsorte «${fallbackKey}»: Schreibe einen Text dieser Textsorte mit stufengerechten Mitteln.`;
+
+  const name = data.label || fallbackKey;
+  const lines: string[] = [`Textsorte «${name}»${data.gruppe ? ` (${data.gruppe})` : ""}:`];
+
+  if (data.register) lines.push(`- Register: ${data.register}`);
+  if (data.funktion?.length) lines.push(`- Funktion: ${data.funktion.join(", ")}`);
+  if (data.perspektive) lines.push(`- Perspektive/Stimme: ${data.perspektive}`);
+  if (data.textaufbau?.length) lines.push(`- Textaufbau: ${data.textaufbau.join(" → ")}`);
+  if (data.typische_sprachhandlungen?.length) lines.push(`- Sprachhandlungen: ${data.typische_sprachhandlungen.join(", ")}`);
+  if (data.typische_konnektoren?.length) lines.push(`- Typische Konnektoren: ${data.typische_konnektoren.join(", ")}`);
+  if (data.textlaenge_richtwert) lines.push(`- Typische Länge (Richtwert für diesen Texttyp, Niveauvorgaben haben Vorrang): ${data.textlaenge_richtwert}`);
+  if (data.layout_merkmale?.length) lines.push(`- Layout/Formales: ${data.layout_merkmale.join(", ")}`);
+  if (data.adressat) lines.push(`- Adressat: ${data.adressat}`);
+  if (data.signalwoerter?.length) lines.push(`- Typische Phrasen/Signalwörter: ${data.signalwoerter.map((s) => `«${s}»`).join(", ")}`);
+
+  return lines.join("\n");
+}
+
+// --- Types for structured HF context JSON ---
+
+type SubdomainActor = { key: string; label: string; description: string };
+type SubdomainInstitution = { key: string; label: string; role: string; url?: string | null };
+type SubdomainTermEntry = { term: string; definition: string };
+type SubdomainProcessData = {
+  documents?: string[];
+  costs?: string;
+  legal_reference?: string | null;
+};
+type SubdomainProcess = { id: string; name: string; CH?: SubdomainProcessData; DE?: SubdomainProcessData };
+type SubdomainData = {
+  id: string;
+  name: string;
+  actors: { shared?: SubdomainActor[]; CH?: SubdomainActor[]; DE?: SubdomainActor[] };
+  institutions: { CH?: SubdomainInstitution[]; DE?: SubdomainInstitution[] };
+  processes?: SubdomainProcess[];
+  terminology: { shared?: SubdomainTermEntry[]; CH?: SubdomainTermEntry[]; DE?: SubdomainTermEntry[] };
+  common_mistakes_in_texts?: string[];
+};
+type HfContextJson = { handlungsfeld: { subdomains: SubdomainData[] } };
+
+// --- Build structured context section for the prompt ---
+
+function buildStrukturkontext(
+  contextJson: HfContextJson | null,
+  subdomainId: string | null,
+  region: "ch" | "de"
+): string {
+  if (!contextJson) return "";
+
+  const subdomains = contextJson.handlungsfeld?.subdomains ?? [];
+  const subdomain =
+    (subdomainId ? subdomains.find((sd) => sd.id === subdomainId) : null) ??
+    subdomains[0];
+  if (!subdomain) return "";
+
+  const r = region.toUpperCase() as "CH" | "DE";
+  const lines: string[] = [
+    `═══ STRUKTURKONTEXT: «${subdomain.name}» ═══`,
+    "Verbindliches Faktenwissen. Verwende korrekte Akteure, Dokumente und Terminologie für diesen Kontext.",
+    "",
+  ];
+
+  // Actors: shared + region-specific
+  const actors = [
+    ...(subdomain.actors.shared ?? []),
+    ...(subdomain.actors[r] ?? []),
+  ];
+  if (actors.length) {
+    lines.push("AKTEURE:");
+    actors.forEach((a) => lines.push(`- ${a.label}: ${a.description}`));
+    lines.push("");
+  }
+
+  // Institutions: region-specific only
+  const institutions = subdomain.institutions[r] ?? [];
+  if (institutions.length) {
+    lines.push(`INSTITUTIONEN (${r}):`)
+    institutions.forEach((i) => lines.push(`- ${i.label}: ${i.role}`));
+    lines.push("");
+  }
+
+  // Process data: documents, costs, legal reference
+  const processData = subdomain.processes?.[0]?.[r];
+  if (processData) {
+    if (processData.documents?.length) {
+      lines.push("DOKUMENTE:");
+      processData.documents.forEach((d) => lines.push(`- ${d}`));
+      lines.push("");
+    }
+    if (processData.costs) {
+      lines.push(`KOSTEN: ${processData.costs}`, "");
+    }
+    if (processData.legal_reference) {
+      lines.push(`RECHTLICHE GRUNDLAGE: ${processData.legal_reference}`, "");
+    }
+  }
+
+  // Terminology: shared + region-specific
+  const terms = [
+    ...(subdomain.terminology.shared ?? []),
+    ...(subdomain.terminology[r] ?? []),
+  ];
+  if (terms.length) {
+    lines.push(`KORREKTE TERMINOLOGIE (${r}):`);
+    terms.forEach((t) => lines.push(`- ${t.term}: ${t.definition}`));
+    lines.push("");
+  }
+
+  // Common mistakes — most impactful: direct false/correct pairs
+  if (subdomain.common_mistakes_in_texts?.length) {
+    lines.push("HÄUFIGE FEHLER – DIESE AUSSAGEN SIND SACHLICH FALSCH – SO NICHT SCHREIBEN:");
+    subdomain.common_mistakes_in_texts.forEach((m) => lines.push(`- ${m}`));
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
 const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprache. Du schreibst Texte für Sprachlerner auf exakt dem CEFR-Niveau {{NIVEAU}}.
 
 ═══ GLOBALE QUALITÄTSKRITERIEN ═══
@@ -342,6 +479,7 @@ const fallbackPromptTemplate = `Du bist ein Experte für Deutsch als Fremdsprach
 
 ═══ {{ANSPRACHE}} ═══
 {{HANDLUNGSFELD}}
+{{STRUKTURKONTEXT}}
 {{KONTEXTREGELN}}
 ═══ TEXTSORTE ═══
 {{TEXTSORTE}}
@@ -421,9 +559,11 @@ export async function POST(request: Request) {
     let kontextregeln: string[] = [];
     const fetchPromises: Promise<void>[] = [];
     let promptTemplate: string | null = null;
-    let textsorteData: { anweisung: string; is_personal: boolean; is_dialog: boolean } | null = null as { anweisung: string; is_personal: boolean; is_dialog: boolean } | null;
+    let textsorteData = null as TextsorteData | null;
     let niveauregelnLevelData: Record<string, unknown> | null = null;
     let topWords: Array<{ wort: string; score: number }> = [];
+    let contextJson: HfContextJson | null = null;
+    let matchedSubdomainId: string | null = null;
 
     // Fetch prompt template
     fetchPromises.push(
@@ -444,11 +584,11 @@ export async function POST(request: Request) {
       Promise.resolve(
         supabase
           .from("textsorten")
-          .select("anweisung, is_personal, is_dialog")
+          .select("is_personal, is_dialog, label, gruppe, register, funktion, perspektive, textaufbau, typische_sprachhandlungen, typische_konnektoren, textlaenge_richtwert, layout_merkmale, adressat, signalwoerter")
           .eq("key", selectedTextType)
           .single()
       ).then(({ data }) => {
-        if (data) textsorteData = data;
+        if (data) textsorteData = data as unknown as TextsorteData;
       })
     );
 
@@ -475,7 +615,7 @@ export async function POST(request: Request) {
           Promise.resolve(
             supabase
               .from("handlungsfelder")
-              .select("name")
+              .select("name, context_json")
               .eq("code", handlungsfeld)
               .single()
           ),
@@ -497,7 +637,10 @@ export async function POST(request: Request) {
               .limit(60)
           ),
         ]).then(([{ data: hf }, { data: regeln }, { data: words }]) => {
-          if (hf) handlungsfeldName = hf.name;
+          if (hf) {
+            handlungsfeldName = hf.name;
+            if (hf.context_json) contextJson = hf.context_json as unknown as HfContextJson;
+          }
           if (regeln?.length) kontextregeln = regeln.map((r: { regel: string }) => r.regel);
           if (Array.isArray(words)) {
             topWords = words.map((row) => {
@@ -510,6 +653,17 @@ export async function POST(request: Request) {
     }
 
     await Promise.all(fetchPromises);
+
+    // Match topic embedding → closest subdomain within this HF (reuses already-computed embedding)
+    if (contextJson && handlungsfeld) {
+      const { data: subdomainMatch } = await supabase.rpc("match_hf_subdomain", {
+        query_embedding: JSON.stringify(queryEmbedding),
+        p_hf_code: handlungsfeld,
+        match_threshold: 0.0,
+        match_count: 1,
+      });
+      if (subdomainMatch?.[0]) matchedSubdomainId = subdomainMatch[0].id as string;
+    }
 
     const { data: matches, error: matchError } = await supabase.rpc(
       "match_sentences",
@@ -567,7 +721,7 @@ export async function POST(request: Request) {
 - A1.1/A1.2: kein Imperativ; bei «neutral-man» möglichst ohne Passiv, stattdessen «man + Modalverb».
 - Durchgehend «man» in Titel, Teaser und Text.`;
 
-    const textTypeRule = textsorteData?.anweisung || `Textsorte «${selectedTextType}»: Schreibe einen Text dieser Textsorte mit stufengerechten Mitteln.`;
+    const textTypeRule = buildTextsorteGuideline(textsorteData, selectedTextType);
     // Use DB niveauregeln if available, otherwise fall back to hardcoded rules
     const niveauregelnText = niveauregelnLevelData
       ? formatLevelDataForPrompt(level, niveauregelnLevelData)
@@ -583,6 +737,12 @@ export async function POST(request: Request) {
       ? `═══ KONTEXTREGELN ═══\nDie folgenden Fakten sind Hintergrundwissen über die Schweiz. Sie informieren über Realität, aber alle Firmen-, Marken- und Institutionsnamen im generierten Text müssen trotzdem fiktiv sein (Ausnahme: Behörden, Verkehrsbetriebe, offizielle Stellen wie SBB, Post, RAV, Krankenkassen-Kategorie ohne Eigenname):\n${kontextregeln.map((r) => `- ${r}`).join("\n")}`
       : "";
 
+    const strukturkontextSection = buildStrukturkontext(
+      contextJson,
+      matchedSubdomainId,
+      (region ?? "ch") as "ch" | "de"
+    );
+
     const lengthSection = isDialog
       ? "Für Dialoge gilt die Längensteuerung nicht – die Länge richtet sich nach dem natürlichen Dialogverlauf und der Pragmatik."
       : `Die Textlänge richtet sich primär nach Textsorte und Inhalt. Ein kurzes Anliegen (z. B. E-Mail wegen defekter Heizung) bleibt auch auf höheren Niveaus kurz – nur die sprachliche Komplexität steigt mit dem Niveau, nicht die Länge.\nRichtwerte für Niveau ${level}: ${lengthRule}.\nÜberschreite diese Richtwerte nicht, unterschreite sie aber gerne, wenn der Inhalt es verlangt.`;
@@ -595,6 +755,7 @@ export async function POST(request: Request) {
       "{{REGION}}": regionRule,
       "{{ANSPRACHE}}": addressRule,
       "{{HANDLUNGSFELD}}": handlungsfeldSection,
+      "{{STRUKTURKONTEXT}}": strukturkontextSection,
       "{{KONTEXTREGELN}}": kontextregelnSection,
       "{{TEXTSORTE}}": textTypeRule,
       "{{LAENGE}}": lengthSection,
@@ -620,7 +781,7 @@ export async function POST(request: Request) {
     );
     const systemPrompt = promptWithoutRealeData + REALE_DATEN_RULE;
 
-    const userMessage = `Schreibe einen Text auf Niveau ${level} zum Thema «${topic}»${handlungsfeldName ? ` im Handlungsfeld «${handlungsfeldName}»` : ""}.`;
+    const userMessage = `Schreibe einen Text auf Niveau ${level} zum Thema «${topic}»${handlungsfeldName ? ` im Handlungsfeld «${handlungsfeldName}»` : ""}. Erfinde einen kreativen, passenden Titel für den Text. Gib ausschliesslich den Titel in der ersten Zeile und danach den Text zurück – ohne Einleitung, Erklärung, Kommentar oder sonstige Zusätze.`;
 
     // 4. Generate text with Claude
     const message = await anthropic.messages.create({
@@ -643,8 +804,32 @@ export async function POST(request: Request) {
       );
     }
 
+    const rawText = content.text.trim();
+    const newlineIndex = rawText.indexOf("\n");
+    const title = newlineIndex !== -1 ? rawText.slice(0, newlineIndex).trim() : "";
+    const text = newlineIndex !== -1 ? rawText.slice(newlineIndex + 1).trim() : rawText;
+
+    // 5. Persist the generation (best-effort, non-blocking)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("textgenerator_generations").insert({
+        user_id: user.id,
+        level,
+        topic,
+        region: region ?? "ch",
+        text_type: textType ?? "",
+        handlungsfeld,
+        title: title || null,
+        text,
+        match_count: matches.length,
+        prompt_system: systemPrompt,
+        prompt_user: userMessage,
+      });
+    }
+
     return NextResponse.json({
-      text: content.text,
+      title,
+      text,
       level,
       topic,
       matchCount: matches.length,

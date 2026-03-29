@@ -8,7 +8,7 @@ export async function GET() {
     const supabase = createClient(await cookies());
     const { data, error } = await supabase
       .from("textsorten")
-      .select("id, key, label, gruppe, anweisung, is_personal, is_dialog, sort_order")
+      .select("id, key, label, gruppe, is_personal, is_dialog, sort_order, register, funktion, perspektive, textaufbau, typische_sprachhandlungen, typische_konnektoren, textlaenge_richtwert, layout_merkmale, adressat, signalwoerter")
       .order("sort_order");
 
     if (error) {
@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { key, label, gruppe, anweisung, is_personal, is_dialog, sort_order } = body;
+    const { key, label, gruppe, is_personal, is_dialog, sort_order } = body;
 
     if (!key || !label || !gruppe) {
       return NextResponse.json(
@@ -48,7 +48,6 @@ export async function POST(request: Request) {
         key,
         label,
         gruppe,
-        anweisung: anweisung ?? "",
         is_personal: is_personal ?? false,
         is_dialog: is_dialog ?? false,
         sort_order: sort_order ?? 0,
