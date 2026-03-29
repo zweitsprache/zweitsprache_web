@@ -159,7 +159,7 @@ export default async function HomePage() {
                     <p className="mt-2 text-xs text-zinc-400">
                       {dfCount} Durchführung{dfCount !== 1 ? "en" : ""}
                     </p>
-                    <span className="mt-3 block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+                    <span className="mt-3 block rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-teal-800">
                       Details
                     </span>
                   </div>
@@ -220,7 +220,7 @@ export default async function HomePage() {
                         {moduleCount} Modul{moduleCount !== 1 ? "e" : ""} · {lessonCount} Lektion
                         {lessonCount !== 1 ? "en" : ""}
                       </p>
-                      <span className="mt-3 block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+                      <span className="mt-3 block rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-teal-800">
                         Kurs ansehen
                       </span>
                     </div>

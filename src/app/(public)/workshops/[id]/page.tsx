@@ -265,7 +265,7 @@ export default async function WorkshopPublicPage({
                   <div className="mt-3">
                     <Link
                       href={`/workshops/${id}/anmelden/${df.id}`}
-                      className="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                      className="inline-flex w-full items-center justify-center rounded-md bg-teal-700 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800"
                     >
                       Anmelden
                     </Link>
@@ -283,7 +283,7 @@ export default async function WorkshopPublicPage({
         </p>
         <Link
           href={`/workshops/${id}/anmelden/${durchfuehrungen[0]?.id ?? ''}`}
-          className="inline-flex w-full items-center justify-center rounded-md bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="inline-flex w-full items-center justify-center rounded-md bg-teal-700 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800"
         >
           Anfrage
         </Link>

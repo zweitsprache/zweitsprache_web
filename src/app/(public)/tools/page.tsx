@@ -64,7 +64,7 @@ export default function ToolsPage() {
               </div>
             </div>
             <div className="p-4">
-              <span className="mt-1 block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+              <span className="mt-1 block rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-teal-800">
                 Öffnen
               </span>
             </div>

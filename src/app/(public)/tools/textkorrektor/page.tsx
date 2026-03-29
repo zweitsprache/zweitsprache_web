@@ -698,7 +698,7 @@ export default function Textkorrektor() {
               </div>
             </div>
             <div className="p-3">
-              <span className="block rounded-md bg-zinc-900 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:group-hover:bg-zinc-200">
+              <span className="block rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-teal-800">
                 Öffnen
               </span>
             </div>
