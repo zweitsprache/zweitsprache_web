@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, ChevronRight, Copy, FileText, Loader2, Upload, X } from "lucide-react";
+import { Check, ChevronRight, Copy, Download, FileText, Loader2, Upload, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,7 @@ export default function Textkorrektor() {
 
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<"raw" | "corrected" | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const taskFileRef = useRef<HTMLInputElement>(null);
@@ -227,6 +228,164 @@ export default function Textkorrektor() {
       setError(err instanceof Error ? err.message : "Fehler bei der Korrektur");
     } finally {
       setCorrectLoading(false);
+    }
+  };
+
+  const stripMarkdown = (text: string): string =>
+    text
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/#{1,6}\s+/g, "")
+      .replace(/`(.+?)`/g, "$1")
+      .replace(/\[(.+?)\]\(.+?\)/g, "$1")
+      .replace(/^\s*[-*+]\s/gm, "\u2022 ")
+      .trim();
+
+  const parseMarkdownTable = (text: string): { headers: string[]; rows: string[][] } | null => {
+    const tableLines = text
+      .split("\n")
+      .filter((l) => l.includes("|") && l.trim().startsWith("|"));
+    // Need at least header + separator + one data row
+    if (tableLines.length < 3) return null;
+    const parseCells = (line: string) =>
+      line.split("|").slice(1, -1).map((c) => c.trim());
+    const headers = parseCells(tableLines[0]);
+    // tableLines[1] is the separator row (---|---)
+    const rows = tableLines.slice(2).map(parseCells).filter((r) => r.some((c) => c));
+    if (!headers.length || !rows.length) return null;
+    return { headers, rows };
+  };
+
+  const downloadPdf = async () => {
+    if (!result) return;
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const { default: autoTable } = await import("jspdf-autotable");
+
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentW = pageW - margin * 2;
+
+      const addSectionTitle = (text: string, y: number): number => {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(text, margin, y);
+        return y + 6;
+      };
+
+      const addBodyText = (text: string, y: number): number => {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        const lines = doc.splitTextToSize(text, contentW);
+        doc.text(lines, margin, y);
+        return y + lines.length * 5;
+      };
+
+      const checkPageBreak = (y: number, reserve = 30): number => {
+        if (y > pageH - reserve) {
+          doc.addPage();
+          return 20;
+        }
+        return y;
+      };
+
+      // ── Page 1: Aufgabe + Kandidatenlösung + Optimierte Lösung ──
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("Textkorrektor – Korrektur", margin, 18);
+      let y = 28;
+
+      if (taskTab !== "none" && taskText.trim()) {
+        y = addSectionTitle("Aufgabe", y);
+        y = addBodyText(taskText.trim(), y) + 8;
+        y = checkPageBreak(y);
+      } else if (taskTab === "file") {
+        y = addSectionTitle("Aufgabe", y);
+        y = addBodyText("[Als Datei hochgeladen]", y) + 8;
+        y = checkPageBreak(y);
+      }
+
+      y = addSectionTitle("Kandidatenlösung", y);
+      y = addBodyText(result.rawText, y) + 8;
+      y = checkPageBreak(y);
+
+      y = addSectionTitle("Optimierte Lösung", y);
+      addBodyText(result.correctedText, y);
+
+      // ── Page 2: Marks table (summary) ──
+      if (result.summary) {
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text("Bewertung", margin, 18);
+
+        const tableData = parseMarkdownTable(result.summary);
+        if (tableData) {
+          autoTable(doc, {
+            head: [tableData.headers],
+            body: tableData.rows,
+            startY: 26,
+            margin: { left: margin, right: margin },
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [63, 63, 70] },
+          });
+          // Text outside the table
+          const nonTableText = result.summary
+            .split("\n")
+            .filter((l) => !l.startsWith("|"))
+            .join("\n")
+            .trim();
+          if (nonTableText) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const afterY = (doc as any).lastAutoTable.finalY + 8;
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            const lines = doc.splitTextToSize(stripMarkdown(nonTableText), contentW);
+            doc.text(lines, margin, afterY);
+          }
+        } else {
+          addBodyText(stripMarkdown(result.summary), 26);
+        }
+      }
+
+      // ── Page 3+: Annotated corrections ──
+      if ((result.annotations?.length ?? 0) > 0) {
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Korrekturen (${result.annotations.length})`, margin, 18);
+
+        autoTable(doc, {
+          head: [["#", "Original", "Korrektur", "Kategorie", "Erklärung"]],
+          body: result.annotations.map((a, i) => [
+            String(i + 1),
+            a.original,
+            a.corrected,
+            a.category,
+            stripMarkdown(a.explanation),
+          ]),
+          startY: 26,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 9, cellPadding: 3, overflow: "linebreak" },
+          headStyles: { fillColor: [63, 63, 70] },
+          columnStyles: {
+            0: { cellWidth: 8 },
+            1: { cellWidth: 28 },
+            2: { cellWidth: 28 },
+            3: { cellWidth: 25 },
+            4: { cellWidth: "auto" },
+          },
+        });
+      }
+
+      doc.save("korrektur.pdf");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Fehler beim PDF-Export");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -671,9 +830,19 @@ export default function Textkorrektor() {
             </section>
           )}
 
-          <Button variant="outline" className="w-full" onClick={clearImage}>
-            Neues Bild analysieren
-          </Button>
+          <div className="flex gap-3">
+            <Button className="flex-1 gap-2" onClick={downloadPdf} disabled={pdfLoading}>
+              {pdfLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Download className="size-4" />
+              )}
+              {pdfLoading ? "PDF wird erstellt…" : "PDF herunterladen"}
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={clearImage}>
+              Neues Bild analysieren
+            </Button>
+          </div>
         </div>
       )}
         </div>

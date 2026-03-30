@@ -24,13 +24,19 @@ export function Footer() {
               </p>
             </div>
 
-            {/* Col 5–6 — Links */}
-            <div className="col-span-2 space-y-2">
+            {/* Col 5 — Empty */}
+            <div />
+
+            {/* Col 6 — Links */}
+            <div className="space-y-2">
               <Link href="/impressum" className="block hover:text-slate-200 transition-colors">
                 Impressum
               </Link>
               <Link href="/datenschutz" className="block hover:text-slate-200 transition-colors">
                 Datenschutz
+              </Link>
+              <Link href="/disclaimer" className="block hover:text-slate-200 transition-colors">
+                Disclaimer
               </Link>
             </div>
 
