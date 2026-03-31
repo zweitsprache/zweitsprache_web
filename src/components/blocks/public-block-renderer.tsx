@@ -254,7 +254,7 @@ function TextRenderer({ block }: { block: TextBlock }) {
   const contentEl = (
     <div className={isRows ? "tiptap-rows" : undefined}>
       {imageEl}
-      <RichHtml html={block.content} className="prose prose-sm max-w-none" />
+      <RichHtml html={block.content} className="prose prose-lg max-w-none leading-[1.5]" />
       {imageEl && <div style={{ clear: "both" }} />}
     </div>
   );
@@ -285,7 +285,7 @@ function TextRenderer({ block }: { block: TextBlock }) {
 }
 
 function TextSnippetRenderer({ block }: { block: TextSnippetBlock }) {
-  return <RichHtml html={block.content} className="prose prose-sm max-w-none" />;
+  return <RichHtml html={block.content} className="prose prose-lg max-w-none leading-[1.5]" />;
 }
 
 function EmailSkeletonRenderer({ block }: { block: EmailSkeletonBlock }) {
@@ -323,7 +323,7 @@ function EmailSkeletonRenderer({ block }: { block: EmailSkeletonBlock }) {
           </div>
         </div>
         <div className="px-4 py-3">
-          <RichHtml html={block.body} className="prose prose-sm max-w-none" />
+          <RichHtml html={block.body} className="prose prose-lg max-w-none leading-[1.5]" />
         </div>
         {attachments.length > 0 && (
           <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50 flex flex-wrap gap-2">
@@ -378,7 +378,7 @@ function JobApplicationRenderer({ block }: { block: JobApplicationBlock }) {
           <div className="flex items-start gap-4">
             <span className="font-semibold text-slate-400 w-24 shrink-0 text-sm pt-1.5">Nachricht</span>
             <div className="flex-1 rounded-sm border border-slate-200 bg-slate-50 px-3 py-1.5">
-              <RichHtml html={block.message} className="prose prose-sm max-w-none" />
+              <RichHtml html={block.message} className="prose prose-lg max-w-none leading-[1.5]" />
             </div>
           </div>
         </div>
@@ -1050,7 +1050,7 @@ function TextComparisonRenderer({ block }: { block: TextComparisonBlock }) {
         </div>
       </div>
       <div className="border rounded-sm rounded-tl-none py-3 pr-3 pl-6" style={{ borderColor: color, color }}>
-        <RichHtml html={content} className="prose prose-sm max-w-none" />
+        <RichHtml html={content} className="prose prose-lg max-w-none leading-[1.5]" />
       </div>
     </div>
   );
@@ -1077,7 +1077,7 @@ function NumberedItemsRenderer({ block }: { block: NumberedItemsBlock }) {
             {String(block.startNumber + i).padStart(2, "0")}
           </div>
           <div className="flex-1 min-w-0 px-3 py-2">
-            <RichHtml html={item.content} className="prose prose-sm max-w-none" />
+            <RichHtml html={item.content} className="prose prose-lg max-w-none leading-[1.5]" />
           </div>
         </div>
       ))}

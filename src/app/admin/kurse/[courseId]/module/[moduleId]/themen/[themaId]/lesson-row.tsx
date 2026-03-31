@@ -62,20 +62,22 @@ export function LessonRow({ id, courseId, moduleId, themaId, title }: LessonRowP
   const editorUrl = `/admin/kurse/${courseId}/module/${moduleId}/themen/${themaId}/lektionen/${id}`
 
   return (
-    <div className="flex items-center justify-between rounded-md bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-      <a href={editorUrl} className="text-sm hover:underline">
-        {title}
-      </a>
-      <div className="flex gap-2">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="mb-2">
+        <a href={editorUrl} className="text-sm font-semibold hover:underline">
+          {title}
+        </a>
+      </div>
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setEditing(true)}
-          className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
         >
           Umbenennen
         </button>
         <a
           href={editorUrl}
-          className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
         >
           Editor
         </a>
@@ -83,13 +85,13 @@ export function LessonRow({ id, courseId, moduleId, themaId, title }: LessonRowP
           <button
             type="submit"
             disabled={isDeleting}
-            className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+            className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:hover:bg-red-950"
           >
-            {isDeleting ? '...' : 'Löschen'}
+            {isDeleting ? 'Löschen...' : 'Löschen'}
           </button>
         </form>
       </div>
-      {deleteState?.error && <p className="text-xs text-red-600">{deleteState.error}</p>}
+      {deleteState?.error && <p className="mt-2 text-xs text-red-600">{deleteState.error}</p>}
     </div>
   )
 }

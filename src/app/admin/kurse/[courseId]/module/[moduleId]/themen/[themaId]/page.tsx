@@ -51,7 +51,7 @@ export default async function ThemaDetailPage({
     .order('sort_order', { ascending: true })
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <a
         href={`/admin/kurse/${courseId}/module/${moduleId}`}
         className="mb-4 inline-block text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
@@ -72,7 +72,7 @@ export default async function ThemaDetailPage({
 
       <div className="mb-8">
         <h2 className="mb-2 text-lg font-semibold">Lektionen</h2>
-        <div className="mb-2 flex flex-col gap-2">
+        <div className="mb-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {lessons && lessons.length > 0 ? (
             lessons.map((lesson) => (
               <LessonRow

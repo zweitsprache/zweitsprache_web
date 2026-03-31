@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import { CreateCourseForm } from './create-course-form'
 import { CourseRow } from './course-row'
+import { ImportCourseDialog } from './import-course-dialog'
 
 export default async function CoursesPage() {
   const cookieStore = await cookies()
@@ -15,8 +16,11 @@ export default async function CoursesPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">Kurse</h1>
-      <div className="mb-6">
-        <CreateCourseForm />
+      <div className="mb-6 flex items-start gap-2">
+        <div className="flex-1">
+          <CreateCourseForm />
+        </div>
+        <ImportCourseDialog />
       </div>
       <div className="flex flex-col gap-2">
         {courses && courses.length > 0 ? (

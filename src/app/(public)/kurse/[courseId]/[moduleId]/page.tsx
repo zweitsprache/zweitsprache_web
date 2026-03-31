@@ -90,32 +90,28 @@ export default async function ModulePublicPage({
             Dieses Modul hat noch keine Themen.
           </p>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {sortedThemen.map(
               (thema: { id: string; title: string; description: string | null; lessons: { id: string; title: string }[] }) => (
-                <div
+                <Link
                   key={thema.id}
-                  className="rounded-lg border border-zinc-200 dark:border-zinc-800"
+                  href={`/kurse/${courseId}/${moduleId}/${thema.id}`}
+                  className="group flex flex-col rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
                 >
-                  <Link
-                    href={`/kurse/${courseId}/${moduleId}/${thema.id}`}
-                    className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                  >
+                  <div className="mb-2 flex items-center gap-2">
                     <FolderOpen className="h-5 w-5 shrink-0 text-zinc-400" />
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-medium">{thema.title}</h4>
-                      {thema.description && (
-                        <p className="mt-0.5 truncate text-sm text-zinc-500">
-                          {thema.description}
-                        </p>
-                      )}
-                    </div>
-                    <span className="shrink-0 text-xs text-zinc-400">
-                      {thema.lessons.length} Lektion
-                      {thema.lessons.length !== 1 ? "en" : ""}
-                    </span>
-                  </Link>
-                </div>
+                    <h4 className="font-medium group-hover:underline">{thema.title}</h4>
+                  </div>
+                  {thema.description && (
+                    <p className="mb-3 line-clamp-2 text-sm text-zinc-500">
+                      {thema.description}
+                    </p>
+                  )}
+                  <p className="mt-auto text-xs text-zinc-400">
+                    {thema.lessons.length} Lektion
+                    {thema.lessons.length !== 1 ? "en" : ""}
+                  </p>
+                </Link>
               )
             )}
           </div>

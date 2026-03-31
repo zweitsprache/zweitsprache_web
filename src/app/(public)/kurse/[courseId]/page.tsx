@@ -117,32 +117,30 @@ export default async function CourseOverviewPage({
           {totalLessons} Lektionen
         </p>
 
-        <div className="flex flex-col gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sortedModules.map((mod, index) => (
-            <div
+            <Link
               key={mod.id}
-              className="rounded-lg border border-zinc-200 dark:border-zinc-800"
+              href={`/kurse/${courseId}/${mod.id}`}
+              className="group flex flex-col rounded-lg border border-zinc-200 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
             >
-              <Link
-                href={`/kurse/${courseId}/${mod.id}`}
-                className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                  {index + 1}
+              <div className="flex flex-1 flex-col p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                    {index + 1}
+                  </div>
+                  <h3 className="font-medium group-hover:underline">{mod.title}</h3>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-medium">{mod.title}</h3>
-                  {mod.description && (
-                    <p className="mt-0.5 truncate text-sm text-zinc-500">
-                      {mod.description}
-                    </p>
-                  )}
-                </div>
-                <span className="shrink-0 text-xs text-zinc-400">
+                {mod.description && (
+                  <p className="mb-3 line-clamp-2 text-sm text-zinc-500">
+                    {mod.description}
+                  </p>
+                )}
+                <p className="mt-auto text-xs text-zinc-400">
                   {mod.themen.reduce((s: number, t: { lessons: unknown[] }) => s + t.lessons.length, 0)} Lektion
                   {mod.themen.reduce((s: number, t: { lessons: unknown[] }) => s + t.lessons.length, 0) !== 1 ? "en" : ""}
-                </span>
-              </Link>
+                </p>
+              </div>
 
               {mod.module_lernziele.length > 0 && (
                 <div className="border-t border-zinc-100 px-4 py-3 dark:border-zinc-800">
@@ -164,7 +162,7 @@ export default async function CourseOverviewPage({
                   </ul>
                 </div>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -30,7 +30,7 @@ export default async function CourseDetailPage({
     .order('sort_order', { ascending: true })
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <a
         href="/admin/kurse"
         className="mb-4 inline-block text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
@@ -64,7 +64,7 @@ export default async function CourseDetailPage({
         <CreateModuleForm courseId={courseId} />
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {modules && modules.length > 0 ? (
           modules.map((mod, i) => (
             <ModuleCard

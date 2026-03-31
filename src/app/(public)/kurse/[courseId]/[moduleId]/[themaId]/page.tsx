@@ -45,19 +45,21 @@ export default async function ThemaPublicPage({
             Dieses Thema hat noch keine Lektionen.
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {lessons.map(
               (lesson: { id: string; title: string }, index: number) => (
                 <Link
                   key={lesson.id}
                   href={`/kurse/${courseId}/${moduleId}/${themaId}/${lesson.id}`}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50"
+                  className="group flex flex-col rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-zinc-100 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                    {index + 1}
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-zinc-100 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                      {index + 1}
+                    </div>
+                    <FileText className="h-4 w-4 shrink-0 text-zinc-400" />
                   </div>
-                  <FileText className="h-4 w-4 shrink-0 text-zinc-400" />
-                  <span className="font-medium">{lesson.title}</span>
+                  <span className="font-medium group-hover:underline">{lesson.title}</span>
                 </Link>
               )
             )}
