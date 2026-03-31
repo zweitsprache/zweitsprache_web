@@ -124,7 +124,7 @@ export default function BulkGeneratorPage() {
       {/* CSV Input */}
       <div className="mb-6 space-y-3">
         <div>
-          <label className="mb-1.5 block text-sm font-medium">
+          <label className="mb-1.5 block text-sm font-medium text-slate-400">
             CSV-Daten <span className="font-normal text-zinc-400">(HF-Code ; Textsorte ; Thema)</span>
           </label>
           <textarea

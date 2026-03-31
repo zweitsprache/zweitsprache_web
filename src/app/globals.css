@@ -56,6 +56,11 @@ body {
   font-size: 18px;
 }
 
+/* Constrain header width on course pages */
+body:has([data-course-layout]) [data-slot="header-inner"] {
+  max-width: 56rem;
+}
+
 @layer base {
   label {
     font-size: 0.75rem;

@@ -25,7 +25,7 @@ export default async function CourseDetailPage({
 
   const { data: modules } = await supabase
     .from('modules')
-    .select('*, lessons(id)')
+    .select('*, themen(id, lessons(id))')
     .eq('course_id', courseId)
     .order('sort_order', { ascending: true })
 
@@ -73,7 +73,7 @@ export default async function CourseDetailPage({
               courseId={courseId}
               title={mod.title}
               description={mod.description}
-              lessonCount={(mod.lessons ?? []).length}
+              lessonCount={(mod.themen ?? []).reduce((sum: number, t: { lessons: { id: string }[] }) => sum + (t.lessons ?? []).length, 0)}
               index={i + 1}
             />
           ))

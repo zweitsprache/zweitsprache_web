@@ -1,18 +1,24 @@
 "use client";
 
-import { type Value } from "platejs";
-import { PlateEditor } from "@/components/plate/editor";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { WorksheetEditor } from "@/components/editor/worksheet-editor";
+import {
+  WorksheetBlock,
+  WorksheetSettings,
+} from "@/types/worksheet";
+import { DEFAULT_SETTINGS } from "@/types/worksheet-constants";
 
 export default function LessonEditor() {
   const params = useParams<{
     courseId: string;
     moduleId: string;
+    themaId: string;
     lessonId: string;
   }>();
   const router = useRouter();
-  const [data, setData] = useState<Value | null>(null);
+  const [blocks, setBlocks] = useState<WorksheetBlock[]>([]);
+  const [settings, setSettings] = useState<WorksheetSettings>(DEFAULT_SETTINGS);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +31,13 @@ export default function LessonEditor() {
       })
       .then((lesson) => {
         const d = lesson.data;
-        setData(Array.isArray(d) ? (d as Value) : null);
+        if (d && typeof d === "object" && !Array.isArray(d) && Array.isArray(d.blocks)) {
+          setBlocks(d.blocks as WorksheetBlock[]);
+          setSettings({ ...DEFAULT_SETTINGS, ...(d.settings ?? {}) });
+        } else {
+          setBlocks([]);
+          setSettings(DEFAULT_SETTINGS);
+        }
         setTitle(lesson.title || "");
         setLoading(false);
       })
@@ -35,19 +47,7 @@ export default function LessonEditor() {
       });
   }, [params.lessonId]);
 
-  const handleSave = async (value: Value) => {
-    const res = await fetch(`/api/lessons/${params.lessonId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: value }),
-    });
-    if (!res.ok) {
-      const body = await res.json();
-      throw new Error(body.error || "Speichern fehlgeschlagen");
-    }
-  };
-
-  const backUrl = `/admin/kurse/${params.courseId}/module/${params.moduleId}`;
+  const backUrl = `/admin/kurse/${params.courseId}/module/${params.moduleId}/themen/${params.themaId}`;
 
   if (loading) {
     return (
@@ -57,7 +57,7 @@ export default function LessonEditor() {
     );
   }
 
-  if (error && !data) {
+  if (error) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-sm text-red-600">{error}</p>
@@ -65,7 +65,7 @@ export default function LessonEditor() {
           onClick={() => router.push(backUrl)}
           className="text-sm text-zinc-500 hover:text-zinc-900"
         >
-          ← Zurück zum Modul
+          ← Zurück zum Thema
         </button>
       </div>
     );
@@ -73,10 +73,11 @@ export default function LessonEditor() {
 
   return (
     <div className="h-screen">
-      <PlateEditor
-        initialValue={data}
-        onSave={handleSave}
-        headerTitle={title}
+      <WorksheetEditor
+        lessonId={params.lessonId}
+        initialTitle={title}
+        initialBlocks={blocks}
+        initialSettings={settings}
         backUrl={backUrl}
       />
     </div>

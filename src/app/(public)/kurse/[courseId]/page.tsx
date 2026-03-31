@@ -37,10 +37,15 @@ export default async function CourseOverviewPage({
         text,
         sort_order
       ),
-      lessons (
+      themen (
         id,
         title,
-        sort_order
+        sort_order,
+        lessons (
+          id,
+          title,
+          sort_order
+        )
       )
     `
     )
@@ -53,11 +58,46 @@ export default async function CourseOverviewPage({
       (a: { sort_order: number }, b: { sort_order: number }) =>
         a.sort_order - b.sort_order
     ),
-    lessons: (mod.lessons ?? []).sort(
-      (a: { sort_order: number }, b: { sort_order: number }) =>
-        a.sort_order - b.sort_order
-    ),
+    themen: (mod.themen ?? [])
+      .sort(
+        (a: { sort_order: number }, b: { sort_order: number }) =>
+          a.sort_order - b.sort_order
+      )
+      .map((t: { id: string; title: string; sort_order: number; lessons: { id: string; title: string; sort_order: number }[] }) => ({
+        ...t,
+        lessons: (t.lessons ?? []).sort(
+          (a: { sort_order: number }, b: { sort_order: number }) =>
+            a.sort_order - b.sort_order
+        ),
+      })),
   }));
+
+  // Count total lessons across all modules > themen
+  const totalLessons = sortedModules.reduce(
+    (sum, mod) =>
+      sum +
+      mod.themen.reduce(
+        (tSum: number, t: { lessons: unknown[] }) => tSum + t.lessons.length,
+        0
+      ),
+    0
+  );
+
+  // Find first lesson for "Kurs starten" button
+  const firstLesson = (() => {
+    for (const mod of sortedModules) {
+      for (const thema of mod.themen) {
+        if (thema.lessons.length > 0) {
+          return {
+            moduleId: mod.id,
+            themaId: thema.id,
+            lessonId: thema.lessons[0].id,
+          };
+        }
+      }
+    }
+    return null;
+  })();
 
   return (
     <div>
@@ -74,11 +114,7 @@ export default async function CourseOverviewPage({
         <h2 className="mb-4 text-xl font-semibold">Kursinhalt</h2>
         <p className="mb-6 text-sm text-zinc-500">
           {sortedModules.length} Modul{sortedModules.length !== 1 ? "e" : ""} ·{" "}
-          {sortedModules.reduce(
-            (sum, mod) => sum + (mod.lessons ?? []).length,
-            0
-          )}{" "}
-          Lektionen
+          {totalLessons} Lektionen
         </p>
 
         <div className="flex flex-col gap-4">
@@ -103,8 +139,8 @@ export default async function CourseOverviewPage({
                   )}
                 </div>
                 <span className="shrink-0 text-xs text-zinc-400">
-                  {(mod.lessons ?? []).length} Lektion
-                  {(mod.lessons ?? []).length !== 1 ? "en" : ""}
+                  {mod.themen.reduce((s: number, t: { lessons: unknown[] }) => s + t.lessons.length, 0)} Lektion
+                  {mod.themen.reduce((s: number, t: { lessons: unknown[] }) => s + t.lessons.length, 0) !== 1 ? "en" : ""}
                 </span>
               </Link>
 
@@ -133,9 +169,9 @@ export default async function CourseOverviewPage({
         </div>
       </div>
 
-      {sortedModules.length > 0 && sortedModules[0].lessons.length > 0 && (
+      {firstLesson && (
         <Link
-          href={`/kurse/${courseId}/${sortedModules[0].id}/${sortedModules[0].lessons[0].id}`}
+          href={`/kurse/${courseId}/${firstLesson.moduleId}/${firstLesson.themaId}/${firstLesson.lessonId}`}
           className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
           <BookOpen className="h-4 w-4" />

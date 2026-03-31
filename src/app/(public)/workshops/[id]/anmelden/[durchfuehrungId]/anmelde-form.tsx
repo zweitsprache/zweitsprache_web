@@ -18,7 +18,7 @@ function FieldInput({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-400">
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
@@ -28,7 +28,7 @@ function FieldInput({
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-zinc-600"
+        className="h-9 w-full rounded-lg border border-zinc-200 bg-white px-3 text-[18px] placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-zinc-600"
       />
     </div>
   );
@@ -49,7 +49,7 @@ function FieldSelect({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-400">
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
@@ -60,7 +60,7 @@ function FieldSelect({
           required={required}
           defaultValue=""
           onChange={(e) => onChange?.(e.target.value)}
-          className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-white px-3 text-sm focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
+          className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-white px-3 text-[18px] focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900"
         >
           <option value="" disabled>Bitte auswählen</option>
           {options.map((o) => (
@@ -96,14 +96,14 @@ function FieldTextarea({
 }) {
   return (
     <div>
-      <label htmlFor={id} className={hideLabel ? "sr-only" : "mb-1.5 block text-sm font-medium"}>
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "mb-1.5 block text-sm font-medium text-slate-400"}>
         {label}
       </label>
       <textarea
         id={id}
         name={id}
         rows={4}
-        className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-zinc-600"
+        className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[18px] placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:placeholder:text-zinc-600"
       />
     </div>
   );
@@ -121,6 +121,9 @@ export function AnmeldeForm({
   const [agb, setAgb] = useState(false);
   const [formValid, setFormValid] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [loadedAt] = useState(() => Date.now());
 
   if (submitted) {
     return (
@@ -139,9 +142,66 @@ export function AnmeldeForm({
 
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        setSubmitted(true);
+        setSubmitting(true);
+        setSubmitError(null);
+
+        const formData = new FormData(e.currentTarget);
+
+        // Honeypot check
+        if (formData.get("website")) {
+          setSubmitted(true);
+          return;
+        }
+
+        // Time-based check (reject if submitted in under 3 seconds)
+        if (Date.now() - loadedAt < 3000) {
+          setSubmitted(true);
+          return;
+        }
+
+        const payload = {
+          workshop_id: formData.get("workshop_id"),
+          durchfuehrung_id: formData.get("durchfuehrung_id"),
+          anrede: formData.get("anrede"),
+          vorname: formData.get("vorname"),
+          name: formData.get("name"),
+          strasse: formData.get("strasse"),
+          plz_ort: formData.get("plz_ort"),
+          email: formData.get("email"),
+          mobiltelefon: formData.get("mobiltelefon"),
+          rechnungsadresse_typ: formData.get("rechnungsadresse_typ"),
+          firma: formData.get("firma"),
+          abteilung: formData.get("abteilung"),
+          rechnung_strasse: formData.get("rechnung_strasse"),
+          rechnung_plz_ort: formData.get("rechnung_plz_ort"),
+          rechnung_email: formData.get("rechnung_email"),
+          bemerkungen: formData.get("bemerkungen"),
+          einwilligung,
+          agb,
+        };
+
+        try {
+          const res = await fetch("/api/anmeldungen", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || "Anmeldung fehlgeschlagen.");
+          }
+
+          setSubmitted(true);
+        } catch (err) {
+          setSubmitError(
+            err instanceof Error ? err.message : "Ein Fehler ist aufgetreten."
+          );
+        } finally {
+          setSubmitting(false);
+        }
       }}
       onChange={(e) => setFormValid(e.currentTarget.checkValidity())}
       className="space-y-10"
@@ -149,7 +209,15 @@ export function AnmeldeForm({
       <input type="hidden" name="workshop_id" value={workshopId} />
       <input type="hidden" name="durchfuehrung_id" value={durchfuehrungId} />
 
-      {/* AGB */}
+      {/* Honeypot — hidden from real users */}
+      <div className="absolute -left-[9999px]" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+      </div>
+
+      {/* Anmeldung */}
+      <fieldset>
+        <legend className="mb-4 text-xl font-bold">Anmeldung</legend>
       <label className="flex items-start gap-3 cursor-pointer normal-case">
         <input
           type="checkbox"
@@ -159,7 +227,7 @@ export function AnmeldeForm({
           onChange={(e) => setAgb(e.target.checked)}
           className="mt-0.5 h-5 w-5 rounded border-zinc-300 accent-zinc-900 dark:accent-zinc-100"
         />
-        <span className="text-sm leading-relaxed">
+        <span className="text-[18px] leading-relaxed">
           Ich melde mich verbindlich an und habe die{" "}
           <a
             href="/agb"
@@ -171,6 +239,7 @@ export function AnmeldeForm({
           zur Kenntnis genommen.<span className="text-red-500"> *</span>
         </span>
       </label>
+      </fieldset>
 
       {/* Persönliche Angaben */}
       <fieldset>
@@ -296,7 +365,7 @@ export function AnmeldeForm({
               onChange={(e) => setEinwilligung(e.target.checked)}
               className="mt-0.5 h-5 w-5 rounded border-zinc-300 accent-zinc-900 dark:accent-zinc-100"
             />
-            <span className="text-sm leading-relaxed">
+            <span className="text-[18px] leading-relaxed">
               Ich stimme der{" "}
               <a
                 href="/datenschutz"
@@ -313,9 +382,12 @@ export function AnmeldeForm({
       </fieldset>
 
       {/* Submit */}
-      <div>
-        <Button type="submit" className="w-full" disabled={!formValid}>
-          Anmeldung absenden
+      <div className="space-y-3">
+        {submitError && (
+          <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
+        )}
+        <Button type="submit" className="w-full" disabled={!formValid || submitting}>
+          {submitting ? "Wird gesendet…" : "Anmeldung absenden"}
         </Button>
       </div>
     </form>

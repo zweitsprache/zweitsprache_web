@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
-import { ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, FileText, FolderOpen } from "lucide-react";
 
 export default async function ModulePublicPage({
   params,
@@ -29,11 +29,33 @@ export default async function ModulePublicPage({
     .eq("module_id", moduleId)
     .order("sort_order", { ascending: true });
 
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("id, title, sort_order")
+  const { data: themen } = await supabase
+    .from("themen")
+    .select(
+      `
+      id,
+      title,
+      description,
+      sort_order,
+      lessons (
+        id,
+        title,
+        sort_order
+      )
+    `
+    )
     .eq("module_id", moduleId)
     .order("sort_order", { ascending: true });
+
+  const sortedThemen = (themen ?? []).map(
+    (t: { id: string; title: string; description: string | null; sort_order: number; lessons: { id: string; title: string; sort_order: number }[] }) => ({
+      ...t,
+      lessons: (t.lessons ?? []).sort(
+        (a: { sort_order: number }, b: { sort_order: number }) =>
+          a.sort_order - b.sort_order
+      ),
+    })
+  );
 
   return (
     <div>
@@ -62,26 +84,38 @@ export default async function ModulePublicPage({
       )}
 
       <div>
-        <h3 className="mb-3 text-lg font-semibold">Lektionen</h3>
-        {(!lessons || lessons.length === 0) ? (
+        <h3 className="mb-3 text-lg font-semibold">Themen</h3>
+        {sortedThemen.length === 0 ? (
           <p className="text-sm text-zinc-500">
-            Dieses Modul hat noch keine Lektionen.
+            Dieses Modul hat noch keine Themen.
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {lessons.map(
-              (lesson: { id: string; title: string }, index: number) => (
-                <Link
-                  key={lesson.id}
-                  href={`/kurse/${courseId}/${moduleId}/${lesson.id}`}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/50"
+          <div className="flex flex-col gap-4">
+            {sortedThemen.map(
+              (thema: { id: string; title: string; description: string | null; lessons: { id: string; title: string }[] }) => (
+                <div
+                  key={thema.id}
+                  className="rounded-lg border border-zinc-200 dark:border-zinc-800"
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-zinc-100 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                    {index + 1}
-                  </div>
-                  <FileText className="h-4 w-4 shrink-0 text-zinc-400" />
-                  <span className="font-medium">{lesson.title}</span>
-                </Link>
+                  <Link
+                    href={`/kurse/${courseId}/${moduleId}/${thema.id}`}
+                    className="flex items-center gap-3 p-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  >
+                    <FolderOpen className="h-5 w-5 shrink-0 text-zinc-400" />
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-medium">{thema.title}</h4>
+                      {thema.description && (
+                        <p className="mt-0.5 truncate text-sm text-zinc-500">
+                          {thema.description}
+                        </p>
+                      )}
+                    </div>
+                    <span className="shrink-0 text-xs text-zinc-400">
+                      {thema.lessons.length} Lektion
+                      {thema.lessons.length !== 1 ? "en" : ""}
+                    </span>
+                  </Link>
+                </div>
               )
             )}
           </div>

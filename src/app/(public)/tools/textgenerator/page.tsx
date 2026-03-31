@@ -143,7 +143,7 @@ export default function TextgeneratorPage() {
 
         {/* Niveau — full width */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium">Niveau</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-400">Niveau</label>
           <div className="flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
             {LEVELS.map((l, i) => (
               <button
@@ -174,7 +174,7 @@ export default function TextgeneratorPage() {
         {/* 6-col row: Handlungsfeld(1-2) | Textsorte(3-4) | Region(5) | Anzahl(6) */}
         <div className="grid grid-cols-6 gap-4">
           <div className="col-span-2">
-            <label className="mb-1.5 block text-sm font-medium">Handlungsfeld</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-400">Handlungsfeld</label>
             <Select value={handlungsfeld} onValueChange={(v) => v !== null && setHandlungsfeld(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue>
@@ -191,7 +191,7 @@ export default function TextgeneratorPage() {
             </Select>
           </div>
           <div className="col-span-2">
-            <label className="mb-1.5 block text-sm font-medium">Textsorte</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-400">Textsorte</label>
             <Select value={textType} onValueChange={(v) => v !== null && setTextType(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue>
@@ -217,7 +217,7 @@ export default function TextgeneratorPage() {
             </Select>
           </div>
           <div className="col-span-1">
-            <label className="mb-1.5 block text-sm font-medium">Region</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-400">Region</label>
             <div className="flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
               <button
                 onClick={() => setRegion("ch")}
@@ -244,7 +244,7 @@ export default function TextgeneratorPage() {
             </div>
           </div>
           <div className="col-span-1">
-            <label className="mb-1.5 block text-sm font-medium">Anzahl</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-400">Anzahl</label>
             <input
               type="number"
               min={1}
@@ -258,7 +258,7 @@ export default function TextgeneratorPage() {
 
         {/* Thema — full width */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium">Thema</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-400">Thema</label>
           <input
             value={topic}
             onChange={(e) => setTopic(e.target.value)}

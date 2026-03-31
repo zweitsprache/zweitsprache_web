@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 
-export function Header() {
+export function Header({ maxWidth = "max-w-6xl" }: { maxWidth?: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-white pt-6 dark:bg-zinc-950">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <div data-slot="header-inner" className={`mx-auto flex items-center justify-between px-4 py-4 ${maxWidth}`}>
         <Link href="/" className="flex items-center">
           <Image
             src="/logos/zweitsprache_logo.svg"
@@ -12,6 +12,7 @@ export function Header() {
             width={35}
             height={9}
             priority
+            style={{ width: 'auto', height: 'auto' }}
           />
         </Link>
         <nav className="flex gap-6">

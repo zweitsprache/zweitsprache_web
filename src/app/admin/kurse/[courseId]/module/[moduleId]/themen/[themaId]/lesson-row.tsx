@@ -1,16 +1,17 @@
 'use client'
 
 import { useActionState, useState } from 'react'
-import { updateLessonTitle, deleteLesson } from '../../../actions'
+import { updateLessonTitle, deleteLesson } from '../../../../../actions'
 
 interface LessonRowProps {
   id: string
   courseId: string
   moduleId: string
+  themaId: string
   title: string
 }
 
-export function LessonRow({ id, courseId, moduleId, title }: LessonRowProps) {
+export function LessonRow({ id, courseId, moduleId, themaId, title }: LessonRowProps) {
   const [editing, setEditing] = useState(false)
 
   const [updateState, updateAction, isUpdating] = useActionState(
@@ -58,12 +59,11 @@ export function LessonRow({ id, courseId, moduleId, title }: LessonRowProps) {
     )
   }
 
+  const editorUrl = `/admin/kurse/${courseId}/module/${moduleId}/themen/${themaId}/lektionen/${id}`
+
   return (
     <div className="flex items-center justify-between rounded-md bg-zinc-50 px-3 py-2 dark:bg-zinc-900">
-      <a
-        href={`/admin/kurse/${courseId}/module/${moduleId}/lektionen/${id}`}
-        className="text-sm hover:underline"
-      >
+      <a href={editorUrl} className="text-sm hover:underline">
         {title}
       </a>
       <div className="flex gap-2">
@@ -74,7 +74,7 @@ export function LessonRow({ id, courseId, moduleId, title }: LessonRowProps) {
           Umbenennen
         </button>
         <a
-          href={`/admin/kurse/${courseId}/module/${moduleId}/lektionen/${id}`}
+          href={editorUrl}
           className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
         >
           Editor

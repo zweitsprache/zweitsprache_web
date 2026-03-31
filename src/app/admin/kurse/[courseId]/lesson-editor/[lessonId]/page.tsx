@@ -1,0 +1,72 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { WorksheetEditor } from "@/components/editor/worksheet-editor"
+import { WorksheetBlock, WorksheetSettings } from "@/types/worksheet"
+import { DEFAULT_SETTINGS } from "@/types/worksheet-constants"
+
+export default function LessonEditorPage() {
+  const params = useParams<{ courseId: string; lessonId: string }>()
+  const [blocks, setBlocks] = useState<WorksheetBlock[]>([])
+  const [settings, setSettings] = useState<WorksheetSettings>(DEFAULT_SETTINGS)
+  const [title, setTitle] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch(`/api/lessons/${params.lessonId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Lektion nicht gefunden")
+        return res.json()
+      })
+      .then((lesson) => {
+        const d = lesson.data
+        if (
+          d &&
+          typeof d === "object" &&
+          !Array.isArray(d) &&
+          Array.isArray(d.blocks)
+        ) {
+          setBlocks(d.blocks as WorksheetBlock[])
+          setSettings({ ...DEFAULT_SETTINGS, ...(d.settings ?? {}) })
+        } else {
+          setBlocks([])
+          setSettings(DEFAULT_SETTINGS)
+        }
+        setTitle(lesson.title || "")
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [params.lessonId])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Laden...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-screen">
+      <WorksheetEditor
+        lessonId={params.lessonId}
+        initialTitle={title}
+        initialBlocks={blocks}
+        initialSettings={settings}
+      />
+    </div>
+  )
+}

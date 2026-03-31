@@ -18,7 +18,10 @@ export default async function KurseListPage() {
       cover_image_url,
       modules (
         id,
-        lessons (id)
+        themen (
+          id,
+          lessons (id)
+        )
       )
     `
     )
@@ -49,8 +52,11 @@ export default async function KurseListPage() {
         {(courses ?? []).map((course) => {
           const moduleCount = (course.modules ?? []).length;
           const lessonCount = (course.modules ?? []).reduce(
-            (sum: number, mod: { lessons: { id: string }[] }) =>
-              sum + (mod.lessons ?? []).length,
+            (sum: number, mod: { themen: { lessons: { id: string }[] }[] }) =>
+              (mod.themen ?? []).reduce(
+                (s: number, t: { lessons: { id: string }[] }) => s + (t.lessons ?? []).length,
+                sum
+              ),
             0
           );
 

@@ -4,8 +4,8 @@ import { createClient } from '@/utils/supabase/server'
 import { EditModuleInline } from './edit-module-inline'
 import { ModuleLernzielRow } from './module-lernziel-row'
 import { CreateModuleLernzielForm } from './create-module-lernziel-form'
-import { LessonRow } from './lesson-row'
-import { CreateLessonForm } from './create-lesson-form'
+import { ThemaCard } from './thema-card'
+import { CreateThemaForm } from './create-thema-form'
 
 export default async function ModuleDetailPage({
   params,
@@ -42,9 +42,9 @@ export default async function ModuleDetailPage({
     .eq('module_id', moduleId)
     .order('sort_order', { ascending: true })
 
-  const { data: lessons } = await supabase
-    .from('lessons')
-    .select('id, title, sort_order')
+  const { data: themen } = await supabase
+    .from('themen')
+    .select('*, lessons(id)')
     .eq('module_id', moduleId)
     .order('sort_order', { ascending: true })
 
@@ -88,23 +88,26 @@ export default async function ModuleDetailPage({
       </div>
 
       <div className="mb-8">
-        <h2 className="mb-2 text-lg font-semibold">Lektionen</h2>
-        <div className="mb-2 flex flex-col gap-2">
-          {lessons && lessons.length > 0 ? (
-            lessons.map((lesson) => (
-              <LessonRow
-                key={lesson.id}
-                id={lesson.id}
+        <h2 className="mb-2 text-lg font-semibold">Themen</h2>
+        <div className="mb-2 flex flex-col gap-3">
+          {themen && themen.length > 0 ? (
+            themen.map((thema, i) => (
+              <ThemaCard
+                key={thema.id}
+                id={thema.id}
                 courseId={courseId}
                 moduleId={moduleId}
-                title={lesson.title}
+                title={thema.title}
+                description={thema.description}
+                lessonCount={(thema.lessons ?? []).length}
+                index={i + 1}
               />
             ))
           ) : (
-            <p className="text-sm text-zinc-500">Noch keine Lektionen vorhanden.</p>
+            <p className="text-sm text-zinc-500">Noch keine Themen vorhanden.</p>
           )}
         </div>
-        <CreateLessonForm moduleId={moduleId} courseId={courseId} />
+        <CreateThemaForm moduleId={moduleId} courseId={courseId} />
       </div>
     </div>
   )

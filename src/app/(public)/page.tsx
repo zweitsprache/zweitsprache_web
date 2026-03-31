@@ -84,6 +84,8 @@ export default async function HomePage() {
             src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
             alt="DaZ einfach machen"
             fill
+            sizes="(max-width: 1152px) 100vw, 1152px"
+            priority
             className="object-cover"
           />
           <div className="absolute inset-0 flex flex-col items-start justify-center bg-slate-900/60 p-8 sm:p-12">
@@ -135,6 +137,7 @@ export default async function HomePage() {
                       src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
                       alt={workshop.title}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover"
                     />
                     <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/60 to-transparent p-4">
@@ -204,6 +207,7 @@ export default async function HomePage() {
                         src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
                         alt={course.title}
                         fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="object-cover"
                       />
                       <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-slate-900/60 to-transparent p-4">

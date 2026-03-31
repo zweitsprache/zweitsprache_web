@@ -1,12 +1,12 @@
 'use client'
 
 import { useActionState } from 'react'
-import { createLesson } from '../../../actions'
+import { createThema } from '../../../actions'
 
-export function CreateLessonForm({ moduleId, courseId }: { moduleId: string; courseId: string }) {
+export function CreateThemaForm({ moduleId, courseId }: { moduleId: string; courseId: string }) {
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
-      return (await createLesson(moduleId, courseId, formData)) ?? null
+      return (await createThema(moduleId, courseId, formData)) ?? null
     },
     null
   )
@@ -16,7 +16,7 @@ export function CreateLessonForm({ moduleId, courseId }: { moduleId: string; cou
       <input
         type="text"
         name="title"
-        placeholder="Neue Lektion..."
+        placeholder="Neues Thema..."
         required
         className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
       />
@@ -25,7 +25,7 @@ export function CreateLessonForm({ moduleId, courseId }: { moduleId: string; cou
         disabled={isPending}
         className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
       >
-        {isPending ? 'Erstellen...' : '+ Lektion'}
+        {isPending ? 'Erstellen...' : '+ Thema'}
       </button>
       {state?.error && <p className="mt-2 text-sm text-red-600">{state.error}</p>}
     </form>
