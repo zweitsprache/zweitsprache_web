@@ -3,10 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, ChevronRight, Copy, Download, FileText, Loader2, Upload, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronUp, Copy, Download, FileText, Loader2, Upload, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
+import type { Annotation, BewertungKriterium, Result } from "./types";
+
+const BEWERTUNG_KRITERIEN = [
+  "Aufgabenbewältigung",
+  "Kommunikative Gestaltung",
+  "Formale Richtigkeit",
+];
+
+const NOTEN: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
 
 const CATEGORY_COLORS: Record<string, string> = {
   Grammatik: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400",
@@ -25,21 +34,6 @@ const LANGUAGES = [
   "Schwedisch", "Serbisch", "Slowakisch", "Slowenisch", "Spanisch", "Tschechisch",
   "Türkisch", "Ukrainisch", "Ungarisch", "Vietnamesisch",
 ];
-
-type Annotation = {
-  original: string;
-  corrected: string;
-  explanation: string;
-  category: string;
-};
-
-type Result = {
-  rawText: string;
-  correctedText: string;
-  annotations: Annotation[];
-  summary: string;
-  ocrEngine: "claude";
-};
 
 type PromptOption = { id: string; name: string };
 
@@ -84,6 +78,7 @@ export default function Textkorrektor() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<"raw" | "corrected" | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [jsonOpen, setJsonOpen] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const taskFileRef = useRef<HTMLInputElement>(null);
@@ -427,6 +422,7 @@ export default function Textkorrektor() {
       {/* Content + Sidebar */}
       <div className="grid grid-cols-1 gap-12 py-12 lg:grid-cols-3">
         <div className="lg:col-span-2">
+
         {/* ── Aufgabe – always shown before results ── */}
       {!result && (
         <section className="mb-6 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
@@ -742,94 +738,210 @@ export default function Textkorrektor() {
         </div>
       )}
 
-      {/* Results */}
-      {result && (
-        <div className="space-y-6">
-          {/* Raw text */}
-          <section>
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Erkannter Text (Original)
-              </h2>
-              <button
-                onClick={() => copyText("raw")}
-                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-              >
-                {copied === "raw" ? <Check className="size-3" /> : <Copy className="size-3" />}
-                {copied === "raw" ? "Kopiert" : "Kopieren"}
-              </button>
-            </div>
-            <pre className="font-sans whitespace-pre-wrap rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-              {result.rawText}
-            </pre>
-          </section>
+      {/* ── Report (always visible) ── */}
+      <div className="space-y-6">
+        <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
 
-          {/* Corrected text */}
-          <section>
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Korrigierter Text
-              </h2>
-              <button
-                onClick={() => copyText("corrected")}
-                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-              >
-                {copied === "corrected" ? <Check className="size-3" /> : <Copy className="size-3" />}
-                {copied === "corrected" ? "Kopiert" : "Kopieren"}
-              </button>
-            </div>
-            <pre className="font-sans whitespace-pre-wrap rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-zinc-700 dark:border-green-800 dark:bg-green-950/20 dark:text-zinc-300">
-              {result.correctedText}
-            </pre>
-          </section>
+          {/* Report header */}
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+            <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Korrekturbericht</h2>
+            {result && (
+              <p className="mt-1 text-xs text-zinc-400">
+                {result.annotations.length} {result.annotations.length === 1 ? "Korrektur" : "Korrekturen"} gefunden
+              </p>
+            )}
+          </div>
 
-          {/* Annotations */}
-          {(result.annotations?.length ?? 0) > 0 && (
-            <section>
-              <h2 className="mb-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Korrekturen ({result.annotations.length})
-              </h2>
-              <div className="space-y-2">
-                {result.annotations.map((a, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-zinc-100 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="line-through text-sm text-zinc-400">{a.original}</span>
-                      <span className="text-zinc-400">→</span>
-                      <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                        {a.corrected}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          CATEGORY_COLORS[a.category] ?? "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                        }`}
-                      >
-                        {a.category}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 prose prose-xs max-w-none dark:prose-invert">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{a.explanation}</ReactMarkdown>
-                    </div>
-                  </div>
+          {/* I – Bewertung */}
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-zinc-500">Bewertung</h3>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wide text-zinc-400 dark:border-zinc-700">
+                  <th className="pb-2 pr-3 w-10"></th>
+                  <th className="pb-2 pr-3">Kriterium</th>
+                  <th className="pb-2 pr-3">Stufe</th>
+                  <th className="pb-2 pr-3 text-right">Rohpunkte</th>
+                  <th className="pb-2 text-right">Endpunkte</th>
+                </tr>
+              </thead>
+              <tbody>
+                {BEWERTUNG_KRITERIEN.map((kriterium, idx) => {
+                  const match = result?.bewertung?.find((b) => b.kriterium === kriterium);
+                  const roman = ["I", "II", "III"][idx];
+                  return (
+                    <tr key={kriterium} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                      <td className="py-3 pr-3 text-sm font-bold text-zinc-400">{roman}</td>
+                      <td className="py-3 pr-3 text-zinc-700 dark:text-zinc-300">{kriterium}</td>
+                      <td className="py-3 pr-3">
+                        <div className="flex gap-1.5">
+                          {NOTEN.map((note) => (
+                            <span
+                              key={note}
+                              className={`flex size-7 items-center justify-center rounded-full border text-xs font-semibold ${
+                                match?.note === note
+                                  ? "border-zinc-800 bg-zinc-800 text-white dark:border-zinc-200 dark:bg-zinc-200 dark:text-zinc-900"
+                                  : "border-zinc-200 text-zinc-300 dark:border-zinc-700 dark:text-zinc-600"
+                              }`}
+                            >
+                              {note}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-3 pr-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">{match?.rohpunkte ?? "—"}</td>
+                      <td className="py-3 text-right tabular-nums text-zinc-700 dark:text-zinc-300">{match?.endpunkte ?? "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-zinc-300 dark:border-zinc-600">
+                  <td colSpan={3} className="py-3 pr-3 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Total</td>
+                  <td className="py-3 pr-3 text-right tabular-nums font-semibold text-zinc-800 dark:text-zinc-100">
+                    {result?.bewertung ? result.bewertung.reduce((s, b) => s + (b.rohpunkte ?? 0), 0) : "—"}
+                  </td>
+                  <td className="py-3 text-right tabular-nums font-semibold text-zinc-800 dark:text-zinc-100">
+                    {result?.bewertung ? result.bewertung.reduce((s, b) => s + (b.endpunkte ?? 0), 0) : "—"}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            {result?.bewertung && result.bewertung.some((b) => b.kommentar) && (
+              <div className="mt-4 space-y-2">
+                {result.bewertung.filter((b) => b.kommentar).map((b) => (
+                  <p key={b.kriterium} className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="font-medium text-zinc-600 dark:text-zinc-300">{b.kriterium}:</span> {b.kommentar}
+                  </p>
                 ))}
               </div>
-            </section>
-          )}
+            )}
+          </div>
 
-          {/* Summary */}
-          {result.summary && (
-            <section className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/20">
-              <h2 className="mb-1 text-sm font-semibold text-blue-800 dark:text-blue-300">
-                Gesamtbewertung
-              </h2>
-              <div className="text-sm text-blue-700 dark:text-blue-400 prose prose-sm prose-blue max-w-none dark:prose-invert">
+          {/* II – Originaltext */}
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Originaltext</h3>
+              {result && (
+                <button
+                  onClick={() => copyText("raw")}
+                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                >
+                  {copied === "raw" ? <Check className="size-3" /> : <Copy className="size-3" />}
+                  {copied === "raw" ? "Kopiert" : "Kopieren"}
+                </button>
+              )}
+            </div>
+            {result ? (
+              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+                {result.rawText}
+              </pre>
+            ) : (
+              <p className="text-sm text-zinc-300 dark:text-zinc-600">—</p>
+            )}
+          </div>
+
+          {/* III – Korrigierter Text */}
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Korrigierter Text</h3>
+              {result && (
+                <button
+                  onClick={() => copyText("corrected")}
+                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                >
+                  {copied === "corrected" ? <Check className="size-3" /> : <Copy className="size-3" />}
+                  {copied === "corrected" ? "Kopiert" : "Kopieren"}
+                </button>
+              )}
+            </div>
+            {result ? (
+              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+                {result.correctedText}
+              </pre>
+            ) : (
+              <p className="text-sm text-zinc-300 dark:text-zinc-600">—</p>
+            )}
+          </div>
+
+          {/* IV – Korrekturen im Detail */}
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Korrekturen im Detail</h3>
+            {result && result.annotations.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-left text-xs font-medium uppercase tracking-wide text-zinc-400 dark:border-zinc-700">
+                      <th className="pb-2 pr-3 w-8">#</th>
+                      <th className="pb-2 pr-3">Original</th>
+                      <th className="pb-2 pr-3">Korrektur</th>
+                      <th className="pb-2 pr-3">Kategorie</th>
+                      <th className="pb-2">Erklärung</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.annotations.map((a, i) => (
+                      <tr key={i} className="border-b border-zinc-100 last:border-0 dark:border-zinc-800">
+                        <td className="py-2.5 pr-3 text-xs text-zinc-400 align-top">{i + 1}</td>
+                        <td className="py-2.5 pr-3 align-top">
+                          <span className="line-through text-zinc-400">{a.original}</span>
+                        </td>
+                        <td className="py-2.5 pr-3 align-top font-medium text-zinc-800 dark:text-zinc-200">
+                          {a.corrected}
+                        </td>
+                        <td className="py-2.5 pr-3 align-top">
+                          <span className={`inline-block whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${
+                            CATEGORY_COLORS[a.category] ?? "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                          }`}>
+                            {a.category}
+                          </span>
+                        </td>
+                        <td className="py-2.5 align-top text-zinc-600 dark:text-zinc-400 prose prose-xs max-w-none dark:prose-invert">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{a.explanation}</ReactMarkdown>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-zinc-300 dark:text-zinc-600">—</p>
+            )}
+          </div>
+
+          {/* V – Gesamtbewertung */}
+          <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Gesamtbewertung</h3>
+            {result?.summary ? (
+              <div className="text-sm text-zinc-700 dark:text-zinc-300 prose prose-sm max-w-none dark:prose-invert">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.summary}</ReactMarkdown>
               </div>
-            </section>
-          )}
+            ) : (
+              <p className="text-sm text-zinc-300 dark:text-zinc-600">—</p>
+            )}
+          </div>
 
+          {/* JSON toggle */}
+          {result && (
+            <div className="px-6">
+              <button
+                className="flex w-full items-center justify-between py-4 text-left text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                onClick={() => setJsonOpen((v) => !v)}
+              >
+                JSON-Ausgabe
+                {jsonOpen ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+              </button>
+              {jsonOpen && (
+                <pre className="mb-4 max-h-80 overflow-auto rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 font-mono text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        {result && (
           <div className="flex gap-3">
             <Button className="flex-1 gap-2" onClick={downloadPdf} disabled={pdfLoading}>
               {pdfLoading ? (
@@ -843,8 +955,8 @@ export default function Textkorrektor() {
               Neues Bild analysieren
             </Button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
         </div>
 
         {/* Sidebar */}

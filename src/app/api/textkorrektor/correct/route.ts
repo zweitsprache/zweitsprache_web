@@ -119,6 +119,29 @@ Antworte ausschliesslich in diesem JSON-Format:
       "category": "Grammatik | Rechtschreibung | Zeichensetzung | Wortstellung | Ausdruck | Zeitform"
     }
   ],
+  "bewertung": [
+    {
+      "kriterium": "Aufgabenbewältigung",
+      "note": "A | B | C | D",
+      "rohpunkte": 0,
+      "endpunkte": 0,
+      "kommentar": "kurzer Kommentar"
+    },
+    {
+      "kriterium": "Kommunikative Gestaltung",
+      "note": "A | B | C | D",
+      "rohpunkte": 0,
+      "endpunkte": 0,
+      "kommentar": "kurzer Kommentar"
+    },
+    {
+      "kriterium": "Formale Richtigkeit",
+      "note": "A | B | C | D",
+      "rohpunkte": 0,
+      "endpunkte": 0,
+      "kommentar": "kurzer Kommentar"
+    }
+  ],
   "summary": "Kurze Gesamtbewertung und wichtigste Hinweise zum Lernfortschritt"
 }
 
