@@ -11,6 +11,7 @@ import {
   CourseOverviewPanel,
   ModuleDetailPanel,
   ThemaDetailPanel,
+  ThemaEditorPanel,
   LessonEditorPanel,
 } from "./detail-panels"
 
@@ -22,6 +23,7 @@ export function CourseBuilder({
   modules: CourseModule[]
 }) {
   const [selection, setSelection] = useState<TreeSelection | null>(null)
+  const [themaEditorOpen, setThemaEditorOpen] = useState<string | null>(null)
 
   // Resolve current selection to actual data
   const selectedModule = selection && "moduleId" in selection
@@ -31,6 +33,11 @@ export function CourseBuilder({
   const selectedThema = selection?.type === "thema" || selection?.type === "lesson"
     ? selectedModule?.themen.find((t) => t.id === selection.themaId)
     : undefined
+
+  // Close thema content editor when selection changes away from the thema
+  React.useEffect(() => {
+    if (selection?.type !== "thema") setThemaEditorOpen(null)
+  }, [selection])
 
   const isLessonSelected = selection?.type === "lesson"
 
@@ -115,6 +122,11 @@ export function CourseBuilder({
               lessonId={selection.lessonId}
               courseId={course.id}
             />
+          ) : themaEditorOpen ? (
+            <ThemaEditorPanel
+              key={themaEditorOpen}
+              themaId={themaEditorOpen}
+            />
           ) : (
             <ScrollArea className="h-full">
               {!selection || selection.type === "course" ? (
@@ -134,6 +146,7 @@ export function CourseBuilder({
                   moduleId={selectedModule.id}
                   courseId={course.id}
                   onSelect={setSelection}
+                  onEditContent={() => setThemaEditorOpen(selectedThema.id)}
                 />
               ) : (
                 <CourseOverviewPanel

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -18,7 +18,7 @@ import { EditorToolbar } from "./editor-toolbar";
 import { BlockSidebar } from "./block-sidebar";
 import { WorksheetCanvas } from "./worksheet-canvas";
 import { PropertiesPanel } from "./properties-panel";
-import { WorksheetBlock, WorksheetSettings } from "@/types/worksheet";
+import { WorksheetBlock, WorksheetSettings, ContentLocale } from "@/types/worksheet";
 import { BLOCK_LIBRARY } from "@/types/worksheet-constants";
 
 interface WorksheetEditorProps {
@@ -27,6 +27,9 @@ interface WorksheetEditorProps {
   initialBlocks: WorksheetBlock[];
   initialSettings: WorksheetSettings;
   backUrl?: string;
+  availableLocales?: ContentLocale[];
+  /** Override the API endpoint used to save/load content (default: /api/lessons/{lessonId}) */
+  saveUrl?: string;
 }
 
 function EditorInner({
@@ -35,11 +38,19 @@ function EditorInner({
   initialBlocks,
   initialSettings,
   backUrl,
+  availableLocales = [],
+  saveUrl,
 }: WorksheetEditorProps) {
   const { state, dispatch, save } = useEditor();
 
-  // Load initial data
+  // Hold initial prop values in a ref so the effect doesn't re-run when the
+  // parent re-renders with new object references (e.g. `availableLocales = []`).
+  const initialDataRef = useRef({ initialTitle, initialBlocks, initialSettings, availableLocales, saveUrl });
+
+  // Load initial data once on mount (or when lessonId changes, which remounts
+  // this component via key= anyway, so dispatch is always stable here).
   useEffect(() => {
+    const { initialTitle, initialBlocks, initialSettings, availableLocales, saveUrl } = initialDataRef.current;
     dispatch({
       type: "LOAD_LESSON",
       payload: {
@@ -47,9 +58,17 @@ function EditorInner({
         title: initialTitle,
         blocks: initialBlocks,
         settings: initialSettings,
+        saveUrl,
       },
     });
-  }, [lessonId, initialTitle, initialBlocks, initialSettings, dispatch]);
+    dispatch({ type: "SET_AVAILABLE_LOCALES", payload: availableLocales });
+    // Cache the initial DE data so switching back doesn't need a refetch
+    dispatch({
+      type: "LOAD_TRANSLATION",
+      payload: { locale: "de", blocks: initialBlocks, settings: initialSettings },
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonId, dispatch]);
 
   // Keyboard shortcuts
   useEffect(() => {

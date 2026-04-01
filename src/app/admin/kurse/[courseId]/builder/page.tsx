@@ -14,7 +14,7 @@ export default async function CourseBuilderPage({
 
   const { data: course } = await supabase
     .from("courses")
-    .select("id, title, subtitle, about, cover_image_url, published")
+    .select("*")
     .eq("id", courseId)
     .single()
 
@@ -40,6 +40,7 @@ export default async function CourseBuilderPage({
         title,
         description,
         sort_order,
+        data,
         lessons (
           id,
           title,

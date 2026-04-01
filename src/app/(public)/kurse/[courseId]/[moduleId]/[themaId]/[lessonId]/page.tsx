@@ -4,13 +4,21 @@ import { createClient } from "@/utils/supabase/server";
 import { PublicBlockRenderer } from "@/components/blocks/public-block-renderer";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { WorksheetBlock } from "@/types/worksheet";
+
+const VALID_LOCALES = new Set(["en", "uk"]);
 
 export default async function LessonPublicPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseId: string; moduleId: string; themaId: string; lessonId: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { courseId, moduleId, themaId, lessonId } = await params;
+  const { lang } = await searchParams;
+  const locale = lang && VALID_LOCALES.has(lang) ? lang : null;
+
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -23,6 +31,44 @@ export default async function LessonPublicPage({
   if (!lesson) {
     notFound();
   }
+
+  // Base blocks (DE)
+  const baseBlocks: WorksheetBlock[] =
+    lesson.data?.blocks && Array.isArray(lesson.data.blocks)
+      ? (lesson.data.blocks as WorksheetBlock[])
+      : [];
+
+  // Fetch translation if a learner locale is active
+  let displayBlocks = baseBlocks;
+  if (locale) {
+    const { data: translation } = await supabase
+      .from("lesson_translations")
+      .select("data")
+      .eq("lesson_id", lessonId)
+      .eq("locale", locale)
+      .single();
+
+    if (translation?.data?.blocks && Array.isArray(translation.data.blocks)) {
+      const translatedBlocks = translation.data.blocks as WorksheetBlock[];
+      // For non-translatable blocks, always use the base (DE) content
+      // We match by block id and position
+      const baseById = new Map(baseBlocks.map((b) => [b.id, b]));
+      displayBlocks = translatedBlocks.map((tb) => {
+        const base = baseById.get(tb.id);
+        if (base && base.translatable === false) return base;
+        return tb;
+      });
+      // Blocks in base that are missing from translation (e.g. newly added) fall back to base
+      const translatedIds = new Set(translatedBlocks.map((b) => b.id));
+      for (const base of baseBlocks) {
+        if (!translatedIds.has(base.id)) {
+          displayBlocks.push(base);
+        }
+      }
+    }
+  }
+
+  const hasContent = displayBlocks.length > 0;
 
   // Fetch all modules with themen and lessons for prev/next navigation
   const { data: allModules } = await supabase
@@ -77,12 +123,7 @@ export default async function LessonPublicPage({
       ? flatLessons[currentIndex + 1]
       : null;
 
-  const hasContent =
-    lesson.data &&
-    typeof lesson.data === "object" &&
-    !Array.isArray(lesson.data) &&
-    Array.isArray(lesson.data.blocks) &&
-    lesson.data.blocks.length > 0;
+  const langSuffix = locale ? `?lang=${locale}` : "";
 
   return (
     <div>
@@ -90,7 +131,7 @@ export default async function LessonPublicPage({
 
       {hasContent ? (
         <div className="max-w-none text-[18px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-          <PublicBlockRenderer blocks={lesson.data.blocks} mode="online" />
+          <PublicBlockRenderer blocks={displayBlocks} mode="online" />
         </div>
       ) : (
         <p className="text-zinc-500">
@@ -102,7 +143,7 @@ export default async function LessonPublicPage({
       <div className="mt-12 flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
         {prevLesson ? (
           <Link
-            href={`/kurse/${courseId}/${prevLesson.moduleId}/${prevLesson.themaId}/${prevLesson.id}`}
+            href={`/kurse/${courseId}/${prevLesson.moduleId}/${prevLesson.themaId}/${prevLesson.id}${langSuffix}`}
             className="flex items-center gap-2 text-sm text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -117,7 +158,7 @@ export default async function LessonPublicPage({
 
         {nextLesson ? (
           <Link
-            href={`/kurse/${courseId}/${nextLesson.moduleId}/${nextLesson.themaId}/${nextLesson.id}`}
+            href={`/kurse/${courseId}/${nextLesson.moduleId}/${nextLesson.themaId}/${nextLesson.id}${langSuffix}`}
             className="flex items-center gap-2 text-sm text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           >
             <div>

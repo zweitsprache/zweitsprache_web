@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { FloatingCourseSidebar } from "./floating-course-sidebar";
 import { LessonSidebar } from "./[moduleId]/[themaId]/[lessonId]/lesson-sidebar";
+import { LanguagePicker } from "./language-picker";
 import Link from "next/link";
 import Image from "next/image";
+import type { ContentLocale } from "@/types/worksheet";
 
 export default async function CourseLayout({
   children,
@@ -19,7 +21,7 @@ export default async function CourseLayout({
 
   const { data: course } = await supabase
     .from("courses")
-    .select("id, title, subtitle")
+    .select("*")
     .eq("id", courseId)
     .eq("published", true)
     .single();
@@ -86,6 +88,15 @@ export default async function CourseLayout({
           <h1 className="text-2xl font-bold text-white sm:text-3xl">{course.title}</h1>
           {course.subtitle && (
             <p className="mt-1 text-base text-zinc-200">{course.subtitle}</p>
+          )}
+          {(course.available_languages ?? []).length > 0 && (
+            <div className="mt-3">
+              <LanguagePicker
+                availableLocales={(course.available_languages as ContentLocale[]).filter(
+                  (l): l is ContentLocale => l === "en" || l === "uk"
+                )}
+              />
+            </div>
           )}
         </div>
       </div>

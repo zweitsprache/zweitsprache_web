@@ -267,6 +267,34 @@ export function PropertiesPanel() {
 
           <Separator />
 
+          {/* Translation control */}
+          <div>
+            <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wider px-2 py-1.5 bg-slate-100 rounded-md block mb-2">
+              Übersetzung
+            </Label>
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedBlock.translatable !== false}
+                onChange={(e) =>
+                  dispatch({
+                    type: "UPDATE_BLOCK",
+                    payload: {
+                      id: selectedBlock.id,
+                      updates: { translatable: e.target.checked },
+                    },
+                  })
+                }
+                className="h-4 w-4 mt-0.5 rounded border-input shrink-0"
+              />
+              <span className="text-xs text-muted-foreground">
+                Übersetzen — Wenn deaktiviert, zeigt dieser Block immer den deutschen Ausgangstext (z.B. Wörterlisten, Lückentexte).
+              </span>
+            </label>
+          </div>
+
+          <Separator />
+
           {/* Block-specific properties */}
           <BlockPropertyEditor block={selectedBlock} />
         </div>

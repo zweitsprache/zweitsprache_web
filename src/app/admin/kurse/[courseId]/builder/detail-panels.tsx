@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useTransition, useEffect } from "react"
-import { BookOpen, FileText, FolderOpen, ArrowRight } from "lucide-react"
+import { BookOpen, FileText, FolderOpen, ArrowRight, LayoutTemplate } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -267,15 +267,24 @@ export function ThemaDetailPanel({
   moduleId,
   courseId,
   onSelect,
+  onEditContent,
 }: {
   thema: CourseThema
   moduleId: string
   courseId: string
   onSelect: (s: TreeSelection) => void
+  onEditContent: () => void
 }) {
   const [isPending, startTransition] = useTransition()
   const [title, setTitle] = useState(thema.title)
   const [description, setDescription] = useState(thema.description ?? "")
+
+  const hasContent =
+    thema.data &&
+    typeof thema.data === "object" &&
+    !Array.isArray(thema.data) &&
+    Array.isArray((thema.data as Record<string, unknown>).blocks) &&
+    ((thema.data as Record<string, unknown>).blocks as unknown[]).length > 0
 
   const saveDetails = () => {
     startTransition(() => {
@@ -317,6 +326,29 @@ export function ThemaDetailPanel({
         </div>
       </div>
 
+      {/* Thema content */}
+      <div>
+        <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5">
+          <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
+          Thema-Inhalt
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Optionaler Inhalt direkt am Thema — z.B. eine Einleitung oder thematische Übersicht ohne Lektion.
+        </p>
+        <Button
+          size="sm"
+          variant={hasContent ? "default" : "outline"}
+          onClick={onEditContent}
+          className="gap-1.5"
+        >
+          <LayoutTemplate className="h-3.5 w-3.5" />
+          {hasContent ? "Inhalt bearbeiten" : "Inhalt hinzufügen"}
+        </Button>
+        {hasContent && (
+          <span className="ml-2 text-xs text-emerald-600">✓ Hat Inhalt</span>
+        )}
+      </div>
+
       {/* Lessons list */}
       <div>
         <h3 className="text-sm font-semibold mb-2">Lektionen</h3>
@@ -327,7 +359,7 @@ export function ThemaDetailPanel({
         ) : (
           <div className="space-y-1">
             {thema.lessons.map((lesson, i) => {
-              const hasContent = lesson.data && typeof lesson.data === "object" && !Array.isArray(lesson.data) && Array.isArray((lesson.data as Record<string, unknown>).blocks) && ((lesson.data as Record<string, unknown>).blocks as unknown[]).length > 0
+              const lessonHasContent = lesson.data && typeof lesson.data === "object" && !Array.isArray(lesson.data) && Array.isArray((lesson.data as Record<string, unknown>).blocks) && ((lesson.data as Record<string, unknown>).blocks as unknown[]).length > 0
               return (
                 <button
                   key={lesson.id}
@@ -341,10 +373,10 @@ export function ThemaDetailPanel({
                   }
                   className="flex w-full items-center gap-2 rounded-md border p-2 text-left text-xs hover:bg-muted transition-colors"
                 >
-                  <FileText className={`h-3.5 w-3.5 shrink-0 ${hasContent ? "text-emerald-500" : "text-muted-foreground/50"}`} />
+                  <FileText className={`h-3.5 w-3.5 shrink-0 ${lessonHasContent ? "text-emerald-500" : "text-muted-foreground/50"}`} />
                   <span className="flex-1 truncate">{lesson.title}</span>
                   <span className="text-muted-foreground text-[10px]">
-                    {hasContent ? "✓" : "leer"}
+                    {lessonHasContent ? "✓" : "leer"}
                   </span>
                 </button>
               )
@@ -423,6 +455,72 @@ export function LessonEditorPanel({
         key={lessonId}
         lessonId={lessonId}
         initialTitle={title}
+        initialBlocks={blocks}
+        initialSettings={settings}
+      />
+    </div>
+  )
+}
+
+// ─── Thema editor wrapper ───────────────────────────────────
+export function ThemaEditorPanel({
+  themaId,
+}: {
+  themaId: string
+}) {
+  const [blocks, setBlocks] = useState<WorksheetBlock[]>([])
+  const [settings, setSettings] = useState<WorksheetSettings>(DEFAULT_SETTINGS)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    fetch(`/api/themen/${themaId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Thema nicht gefunden")
+        return res.json()
+      })
+      .then((thema) => {
+        const d = thema.data
+        if (d && typeof d === "object" && !Array.isArray(d) && Array.isArray(d.blocks)) {
+          setBlocks(d.blocks as WorksheetBlock[])
+          setSettings({ ...DEFAULT_SETTINGS, ...(d.settings ?? {}) })
+        } else {
+          setBlocks([])
+          setSettings(DEFAULT_SETTINGS)
+        }
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [themaId])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-muted-foreground">Laden...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-full">
+      <WorksheetEditor
+        key={themaId}
+        lessonId={themaId}
+        saveUrl={`/api/themen/${themaId}`}
+        initialTitle=""
         initialBlocks={blocks}
         initialSettings={settings}
       />

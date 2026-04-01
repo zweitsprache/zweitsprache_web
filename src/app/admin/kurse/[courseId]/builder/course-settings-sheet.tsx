@@ -27,6 +27,11 @@ import {
 import type { CourseData } from "./types"
 import { updateCourseInline, deleteCourse } from "../../actions"
 
+const LEARNER_LANGUAGES: { value: string; label: string; flag: string }[] = [
+  { value: "en", label: "Englisch", flag: "🇬🇧" },
+  { value: "uk", label: "Ukrainisch", flag: "🇺🇦" },
+]
+
 export function CourseSettingsSheet({
   course,
 }: {
@@ -38,6 +43,15 @@ export function CourseSettingsSheet({
   const [about, setAbout] = useState(course.about ?? "")
   const [coverImageUrl, setCoverImageUrl] = useState(course.cover_image_url ?? "")
   const [published, setPublished] = useState(course.published)
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>(
+    course.available_languages ?? []
+  )
+
+  const toggleLanguage = (value: string) => {
+    setAvailableLanguages((prev) =>
+      prev.includes(value) ? prev.filter((l) => l !== value) : [...prev, value]
+    )
+  }
 
   const save = () => {
     startTransition(() => {
@@ -47,6 +61,7 @@ export function CourseSettingsSheet({
         about: about || null,
         cover_image_url: coverImageUrl || null,
         published,
+        available_languages: availableLanguages,
       })
     })
   }
@@ -111,6 +126,33 @@ export function CourseSettingsSheet({
             <Label htmlFor="published-toggle" className="text-sm cursor-pointer">
               Veröffentlicht
             </Label>
+          </div>
+
+          <hr className="my-2" />
+
+          <div>
+            <Label className="text-xs mb-1.5 block">Lerner-Sprachen</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Übersetzungen für Kursinhalt (Aufgabenstellungen, Anweisungen). Deutsch bleibt immer die Basis.
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {LEARNER_LANGUAGES.map((lang) => (
+                <label
+                  key={lang.value}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={availableLanguages.includes(lang.value)}
+                    onChange={() => toggleLanguage(lang.value)}
+                    className="h-4 w-4 rounded border-input"
+                  />
+                  <span className="text-sm">
+                    {lang.flag} {lang.label}
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <Button onClick={save} disabled={isPending} className="w-full">

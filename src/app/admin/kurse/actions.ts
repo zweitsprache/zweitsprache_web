@@ -70,6 +70,7 @@ export async function updateCourseInline(id: string, updates: {
   about?: string | null
   cover_image_url?: string | null
   published: boolean
+  available_languages?: string[]
 }) {
   const cookieStore = await cookies()
   const supabase = createClient(cookieStore)
@@ -86,6 +87,9 @@ export async function updateCourseInline(id: string, updates: {
       about: updates.about?.trim() || null,
       cover_image_url: updates.cover_image_url?.trim() || null,
       published: updates.published,
+      ...(updates.available_languages !== undefined && {
+        available_languages: updates.available_languages,
+      }),
     })
     .eq('id', id)
 

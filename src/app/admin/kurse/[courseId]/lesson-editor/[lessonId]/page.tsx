@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { WorksheetEditor } from "@/components/editor/worksheet-editor"
-import { WorksheetBlock, WorksheetSettings } from "@/types/worksheet"
+import { WorksheetBlock, WorksheetSettings, ContentLocale } from "@/types/worksheet"
 import { DEFAULT_SETTINGS } from "@/types/worksheet-constants"
 
 export default function LessonEditorPage() {
@@ -11,16 +11,21 @@ export default function LessonEditorPage() {
   const [blocks, setBlocks] = useState<WorksheetBlock[]>([])
   const [settings, setSettings] = useState<WorksheetSettings>(DEFAULT_SETTINGS)
   const [title, setTitle] = useState("")
+  const [availableLocales, setAvailableLocales] = useState<ContentLocale[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`/api/lessons/${params.lessonId}`)
-      .then((res) => {
+    Promise.all([
+      fetch(`/api/lessons/${params.lessonId}`).then((res) => {
         if (!res.ok) throw new Error("Lektion nicht gefunden")
         return res.json()
-      })
-      .then((lesson) => {
+      }),
+      fetch(`/api/courses/${params.courseId}/languages`).then((res) =>
+        res.ok ? res.json() : { available_languages: [] }
+      ),
+    ])
+      .then(([lesson, courseData]) => {
         const d = lesson.data
         if (
           d &&
@@ -35,13 +40,15 @@ export default function LessonEditorPage() {
           setSettings(DEFAULT_SETTINGS)
         }
         setTitle(lesson.title || "")
+        const langs: string[] = courseData.available_languages ?? []
+        setAvailableLocales(langs.filter((l): l is ContentLocale => l === "en" || l === "uk"))
         setLoading(false)
       })
       .catch((err) => {
         setError(err.message)
         setLoading(false)
       })
-  }, [params.lessonId])
+  }, [params.lessonId, params.courseId])
 
   if (loading) {
     return (
@@ -66,6 +73,7 @@ export default function LessonEditorPage() {
         initialTitle={title}
         initialBlocks={blocks}
         initialSettings={settings}
+        availableLocales={availableLocales}
       />
     </div>
   )

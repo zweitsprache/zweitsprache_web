@@ -6,6 +6,7 @@ import { getEffectiveValue, hasChOverride, countChOverrides } from "@/lib/locale
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { CONTENT_LOCALE_FLAGS, CONTENT_LOCALE_LABELS, type ContentLocale } from "@/types/worksheet";
 
 import {
   Save,
@@ -20,7 +21,7 @@ interface EditorToolbarProps {
 }
 
 export function EditorToolbar({ backUrl }: EditorToolbarProps) {
-  const { state, dispatch, save } = useEditor();
+  const { state, dispatch, save, switchContentLocale } = useEditor();
 
   // CH-aware title
   const isChMode = state.localeMode === "CH";
@@ -112,6 +113,25 @@ export function EditorToolbar({ backUrl }: EditorToolbarProps) {
           )}
         </Button>
       </div>
+
+      {/* Content locale selector — only shown when the course has learner languages */}
+      {state.availableLocales.length > 0 && (
+        <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
+          {(["de", ...state.availableLocales] as ContentLocale[]).map((locale) => (
+            <Button
+              key={locale}
+              variant={state.contentLocale === locale ? "default" : "ghost"}
+              size="sm"
+              className={`h-7 px-2.5 gap-1 text-xs ${state.contentLocale === locale ? "shadow-sm" : ""}`}
+              onClick={() => switchContentLocale(locale)}
+              disabled={state.isSaving}
+              title={locale === "de" ? "Deutsch (Basis)" : `Übersetzung: ${CONTENT_LOCALE_LABELS[locale]}`}
+            >
+              {CONTENT_LOCALE_FLAGS[locale]} {CONTENT_LOCALE_LABELS[locale]}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Mode toggle */}
       <div className="flex items-center bg-muted rounded-lg p-0.5">

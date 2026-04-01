@@ -11,6 +11,7 @@ export type CourseThema = {
   title: string
   description: string | null
   sort_order: number
+  data: unknown
   lessons: CourseLesson[]
 }
 
@@ -36,6 +37,7 @@ export type CourseData = {
   about: string | null
   cover_image_url: string | null
   published: boolean
+  available_languages: string[]
 }
 
 export type TreeSelection =

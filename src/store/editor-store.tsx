@@ -9,6 +9,7 @@ import {
   BlockType,
   BlockVisibility,
   ChOverrides,
+  ContentLocale,
 } from "@/types/worksheet";
 import { BLOCK_LIBRARY, DEFAULT_SETTINGS } from "@/types/worksheet-constants";
 
@@ -17,6 +18,8 @@ export type LocaleMode = "DE" | "CH";
 // ─── State ───────────────────────────────────────────────────
 interface EditorState {
   lessonId: string | null;
+  /** Custom save URL override; defaults to /api/lessons/{lessonId} */
+  saveUrl: string | null;
   title: string;
   blocks: WorksheetBlock[];
   settings: WorksheetSettings;
@@ -26,10 +29,17 @@ interface EditorState {
   localeMode: LocaleMode;
   isDirty: boolean;
   isSaving: boolean;
+  /** Active content locale for translation (de = base, en/uk = learner language) */
+  contentLocale: ContentLocale;
+  /** Languages enabled for this course, loaded from course.available_languages */
+  availableLocales: ContentLocale[];
+  /** Cached translation data per locale (to avoid re-fetching on toggle) */
+  translations: Partial<Record<ContentLocale, { blocks: WorksheetBlock[]; settings: WorksheetSettings }>>;
 }
 
 const initialState: EditorState = {
   lessonId: null,
+  saveUrl: null,
   title: "Untitled Lesson",
   blocks: [],
   settings: DEFAULT_SETTINGS,
@@ -39,6 +49,9 @@ const initialState: EditorState = {
   localeMode: "DE",
   isDirty: false,
   isSaving: false,
+  contentLocale: "de",
+  availableLocales: [],
+  translations: {},
 };
 
 // ─── Actions ─────────────────────────────────────────────────
@@ -50,6 +63,8 @@ type EditorAction =
         title: string;
         blocks: WorksheetBlock[];
         settings: WorksheetSettings;
+        /** Override save URL; defaults to /api/lessons/{id} */
+        saveUrl?: string;
       };
     }
   | { type: "SET_TITLE"; payload: string }
@@ -66,6 +81,13 @@ type EditorAction =
   | { type: "SET_SAVING"; payload: boolean }
   | { type: "MARK_SAVED" }
   | { type: "SET_LOCALE_MODE"; payload: LocaleMode }
+  | { type: "SET_CONTENT_LOCALE"; payload: ContentLocale }
+  | { type: "SET_AVAILABLE_LOCALES"; payload: ContentLocale[] }
+  | {
+      type: "LOAD_TRANSLATION";
+      payload: { locale: ContentLocale; blocks: WorksheetBlock[]; settings: WorksheetSettings };
+    }
+  | { type: "SAVE_TRANSLATION_CACHE"; payload: { locale: ContentLocale } }
   | { type: "SET_CH_OVERRIDE"; payload: { blockId: string; fieldPath: string; value: string } }
   | { type: "CLEAR_CH_OVERRIDE"; payload: { blockId: string; fieldPath: string } }
   | { type: "CLEAR_BLOCK_CH_OVERRIDES"; payload: string }
@@ -208,6 +230,7 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return {
         ...state,
         lessonId: action.payload.id,
+        saveUrl: action.payload.saveUrl ?? null,
         title: action.payload.title,
         blocks: action.payload.blocks,
         settings: { ...DEFAULT_SETTINGS, ...action.payload.settings },
@@ -302,6 +325,38 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 
     case "SET_LOCALE_MODE":
       return { ...state, localeMode: action.payload };
+
+    case "SET_CONTENT_LOCALE":
+      return { ...state, contentLocale: action.payload };
+
+    case "SET_AVAILABLE_LOCALES":
+      return { ...state, availableLocales: action.payload };
+
+    case "LOAD_TRANSLATION": {
+      const { locale, blocks, settings } = action.payload;
+      return {
+        ...state,
+        contentLocale: locale,
+        blocks,
+        settings,
+        isDirty: false,
+        translations: {
+          ...state.translations,
+          [locale]: { blocks, settings },
+        },
+      };
+    }
+
+    case "SAVE_TRANSLATION_CACHE": {
+      const { locale } = action.payload;
+      return {
+        ...state,
+        translations: {
+          ...state.translations,
+          [locale]: { blocks: state.blocks, settings: state.settings },
+        },
+      };
+    }
 
     case "SET_CH_OVERRIDE": {
       const { blockId, fieldPath, value } = action.payload;
@@ -455,6 +510,8 @@ interface EditorContextValue {
   addBlock: (type: BlockType, index?: number) => void;
   duplicateBlock: (id: string) => void;
   save: () => Promise<void>;
+  /** Save current locale, then switch to targetLocale (loading from API or cache) */
+  switchContentLocale: (targetLocale: ContentLocale) => Promise<void>;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -500,12 +557,14 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   const save = useCallback(async () => {
     if (!state.lessonId) return;
+    const url = state.saveUrl ?? `/api/lessons/${state.lessonId}`;
     dispatch({ type: "SET_SAVING", payload: true });
     try {
-      const res = await fetch(`/api/lessons/${state.lessonId}`, {
+      const res = await fetch(url, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          locale: state.contentLocale,
           data: {
             blocks: state.blocks,
             settings: state.settings,
@@ -521,10 +580,59 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       console.error("Save failed:", err);
       dispatch({ type: "SET_SAVING", payload: false });
     }
-  }, [state.lessonId, state.blocks, state.settings]);
+  }, [state.lessonId, state.blocks, state.settings, state.contentLocale]);
+
+  const switchContentLocale = useCallback(
+    async (targetLocale: ContentLocale) => {
+      if (!state.lessonId || targetLocale === state.contentLocale) return;
+
+      // Save current locale if dirty
+      if (state.isDirty) {
+        await save();
+      } else {
+        // Cache current locale data even if not dirty
+        dispatch({ type: "SAVE_TRANSLATION_CACHE", payload: { locale: state.contentLocale } });
+      }
+
+      // Check if we already have cached data
+      const cached = state.translations[targetLocale];
+      if (cached) {
+        dispatch({ type: "LOAD_TRANSLATION", payload: { locale: targetLocale, ...cached } });
+        return;
+      }
+
+      // If switching back to DE, load from DE cache (base data)
+      if (targetLocale === "de") {
+        const deCache = state.translations["de"];
+        if (deCache) {
+          dispatch({ type: "LOAD_TRANSLATION", payload: { locale: "de", ...deCache } });
+          return;
+        }
+      }
+
+      // Fetch from API
+      dispatch({ type: "SET_SAVING", payload: true });
+      try {
+        const suffix = targetLocale !== "de" ? `?locale=${targetLocale}` : "";
+        const baseUrl = state.saveUrl ?? `/api/lessons/${state.lessonId}`;
+        const res = await fetch(`${baseUrl}${suffix}`);
+        if (!res.ok) throw new Error("Laden fehlgeschlagen");
+        const lesson = await res.json();
+        const d = lesson.data;
+        const blocks: WorksheetBlock[] = Array.isArray(d?.blocks) ? d.blocks : [];
+        const settings: WorksheetSettings = { ...DEFAULT_SETTINGS, ...(d?.settings ?? {}) };
+        dispatch({ type: "LOAD_TRANSLATION", payload: { locale: targetLocale, blocks, settings } });
+      } catch (err) {
+        console.error("Locale switch failed:", err);
+      } finally {
+        dispatch({ type: "SET_SAVING", payload: false });
+      }
+    },
+    [state.lessonId, state.saveUrl, state.contentLocale, state.isDirty, state.translations, save]
+  );
 
   return (
-    <EditorContext.Provider value={{ state, dispatch, addBlock, duplicateBlock, save }}>
+    <EditorContext.Provider value={{ state, dispatch, addBlock, duplicateBlock, save, switchContentLocale }}>
       {children}
     </EditorContext.Provider>
   );

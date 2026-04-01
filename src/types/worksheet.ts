@@ -4,6 +4,23 @@ export type BlockVisibility = "both" | "print" | "online";
 // ─── View mode ───────────────────────────────────────────────
 export type ViewMode = "print" | "online";
 
+// ─── Content locale ──────────────────────────────────────────
+// "de" is the base language (always stored in lessons.data).
+// "en" / "uk" are learner-language translations stored in lesson_translations.
+export type ContentLocale = "de" | "en" | "uk";
+
+export const CONTENT_LOCALE_LABELS: Record<ContentLocale, string> = {
+  de: "DE",
+  en: "EN",
+  uk: "UA",
+};
+
+export const CONTENT_LOCALE_FLAGS: Record<ContentLocale, string> = {
+  de: "🇩🇪",
+  en: "🇬🇧",
+  uk: "🇺🇦",
+};
+
 // ─── Block types ─────────────────────────────────────────────
 export type BlockType =
   | "heading"
@@ -58,6 +75,13 @@ export interface BlockBase {
   id: string;
   type: BlockType;
   visibility: BlockVisibility;
+  /**
+   * When false this block is never translated — it always renders base (DE)
+   * content regardless of the active content locale. Use for blocks whose
+   * German text IS the learning target (e.g. a word bank in German).
+   * Defaults to true (translatable).
+   */
+  translatable?: boolean;
 }
 
 // ─── Heading block ───────────────────────────────────────────
