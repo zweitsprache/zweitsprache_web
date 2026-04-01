@@ -279,12 +279,13 @@ export function ThemaDetailPanel({
   const [title, setTitle] = useState(thema.title)
   const [description, setDescription] = useState(thema.description ?? "")
 
-  const hasContent =
+  const hasContent = Boolean(
     thema.data &&
     typeof thema.data === "object" &&
     !Array.isArray(thema.data) &&
     Array.isArray((thema.data as Record<string, unknown>).blocks) &&
     ((thema.data as Record<string, unknown>).blocks as unknown[]).length > 0
+  )
 
   const saveDetails = () => {
     startTransition(() => {
