@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { deleteDurchfuehrung, updateDurchfuehrungOrt } from '../actions'
 import { TerminRow } from './termin-row'
@@ -17,6 +18,19 @@ interface DurchfuehrungCardProps {
   index: number
   termine: Termin[]
   ort: string | null
+  status?: string
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  geplant: 'Geplant',
+  'bestätigt': 'Bestätigt',
+  abgesagt: 'Abgesagt',
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  geplant: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
+  'bestätigt': 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  abgesagt: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
 }
 
 export function DurchfuehrungCard({
@@ -25,6 +39,7 @@ export function DurchfuehrungCard({
   index,
   termine,
   ort,
+  status = 'geplant',
 }: DurchfuehrungCardProps) {
   const [deleteState, deleteAction, isDeleting] = useActionState(
     async (_prev: { error?: string } | null, _formData: FormData) => {
@@ -43,16 +58,31 @@ export function DurchfuehrungCard({
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Durchführung {index}</h3>
-        <form action={deleteAction}>
-          <button
-            type="submit"
-            disabled={isDeleting}
-            className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:hover:bg-red-950"
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold">Durchführung {index}</h3>
+          <span
+            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[status] ?? STATUS_COLORS.geplant}`}
           >
-            {isDeleting ? 'Löschen...' : 'Löschen'}
-          </button>
-        </form>
+            {STATUS_LABELS[status] ?? status}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/durchfuehrungen/${id}`}
+            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+          >
+            Verwalten →
+          </Link>
+          <form action={deleteAction}>
+            <button
+              type="submit"
+              disabled={isDeleting}
+              className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:hover:bg-red-950"
+            >
+              {isDeleting ? 'Löschen...' : 'Löschen'}
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className="mb-3 flex flex-col gap-1.5">

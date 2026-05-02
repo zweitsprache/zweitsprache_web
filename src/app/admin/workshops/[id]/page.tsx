@@ -3,12 +3,15 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { CreateDurchfuehrungForm } from './create-durchfuehrung-form'
 import { CreateRepeatableForm } from './create-repeatable-form'
+import { CreateStimmeForm } from './create-stimme-form'
 import { DurchfuehrungCard } from './durchfuehrung-card'
 import { RepeatableRow } from './repeatable-row'
+import { StimmeRow } from './stimme-row'
 import {
   createLernziel, updateLernziel, deleteLernziel,
   createInhalt, updateInhalt, deleteInhalt,
   createVoraussetzung, updateVoraussetzung, deleteVoraussetzung,
+  createStimme, updateStimme, deleteStimme,
 } from '../actions'
 
 export default async function WorkshopDetailPage({
@@ -50,6 +53,12 @@ export default async function WorkshopDetailPage({
 
   const { data: voraussetzungen } = await supabase
     .from('voraussetzungen')
+    .select('*')
+    .eq('workshop_id', id)
+    .order('sort_order', { ascending: true })
+
+  const { data: stimmen } = await supabase
+    .from('workshop_stimmen')
     .select('*')
     .eq('workshop_id', id)
     .order('sort_order', { ascending: true })
@@ -144,6 +153,28 @@ export default async function WorkshopDetailPage({
         <CreateRepeatableForm workshopId={id} placeholder="Neue Voraussetzung..." onCreate={createVoraussetzung} />
       </div>
 
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">Teilnehmer:innen-Stimmen</h2>
+        <div className="mb-2 flex flex-col gap-2">
+          {stimmen && stimmen.length > 0 ? (
+            stimmen.map((stimme) => (
+              <StimmeRow
+                key={stimme.id}
+                id={stimme.id}
+                workshopId={id}
+                name={stimme.name}
+                text={stimme.text}
+                onUpdate={updateStimme}
+                onDelete={deleteStimme}
+              />
+            ))
+          ) : (
+            <p className="text-sm text-zinc-500">Noch keine Stimmen vorhanden.</p>
+          )}
+        </div>
+        <CreateStimmeForm workshopId={id} onCreate={createStimme} />
+      </div>
+
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Durchführungen</h2>
       </div>
@@ -161,6 +192,7 @@ export default async function WorkshopDetailPage({
               workshopId={id}
               index={i + 1}
               ort={df.ort ?? null}
+              status={df.status ?? 'geplant'}
               termine={(df.termine ?? []).sort(
                 (a: { start_datetime: string }, b: { start_datetime: string }) =>
                   new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime()

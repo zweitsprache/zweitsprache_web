@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 
 const contentItems = [
   { href: '/admin/workshops', label: 'Workshops' },
+  { href: '/admin/durchfuehrungen', label: 'Durchführungen' },
+  { href: '/admin/anmeldungen', label: 'Anmeldungen' },
   { href: '/admin/kurse', label: 'Kurse' },
   { href: '/admin/seiten', label: 'Seiten' },
   { href: '/admin/satzbank', label: 'Satzbank' },

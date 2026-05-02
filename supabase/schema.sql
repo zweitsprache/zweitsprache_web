@@ -4,6 +4,7 @@ create table workshops (
   title text not null,
   subtitle text,
   about text,
+  min_teilnehmer int,
   max_teilnehmer int,
   preis numeric(10, 2),
   created_at timestamptz not null default now()

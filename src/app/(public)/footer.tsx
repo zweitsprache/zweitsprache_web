@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer>
       <div className="mx-auto max-w-6xl px-4">
-        <div className="rounded-tl-2xl rounded-tr-2xl bg-slate-900 px-8 py-10 text-sm text-slate-400">
+        <div className="rounded-tl-2xl rounded-tr-2xl bg-stone-800 px-8 py-10 text-sm text-slate-400">
           <div className="grid grid-cols-7 gap-8">
             {/* Col 1–2 — Contact */}
             <div className="col-span-2 space-y-1">

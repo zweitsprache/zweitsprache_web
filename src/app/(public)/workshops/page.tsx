@@ -4,6 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 
 const WEEKDAYS_DE = ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'];
+const CARD_LINK_CLASS =
+  "group overflow-hidden rounded-lg border border-zinc-200 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800";
+const CARD_MEDIA_CLASS =
+  "absolute -inset-px transform-gpu bg-cover bg-center transition-transform duration-300 will-change-transform [backface-visibility:hidden] group-hover:scale-[1.02]";
+const CARD_TITLE_STRIP_CLASS = "absolute bottom-0 left-0 right-0 border-b border-white/85 bg-white/85";
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -20,6 +25,14 @@ function formatTime(dateStr: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function getNextQuarterLabel() {
+  const now = new Date();
+  const quarter = Math.floor(now.getMonth() / 3);
+  const targetQuarter = (quarter + 2) % 4;
+  const yearOffset = quarter + 2 >= 4 ? 1 : 0;
+  return `Q${targetQuarter + 1}/${now.getFullYear() + yearOffset}`;
 }
 
 export default async function WorkshopsPage() {
@@ -68,7 +81,7 @@ export default async function WorkshopsPage() {
           fill
           className="object-cover"
         />
-        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-black/20 p-6 sm:p-8">
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-black/10 p-6 sm:p-8">
           <h1 className="text-3xl font-bold text-white sm:text-4xl">
             Workshops
           </h1>
@@ -92,43 +105,50 @@ export default async function WorkshopsPage() {
           );
           const nextTermin = upcoming[0] as { start_datetime: string; end_datetime: string } | undefined;
           const dfCount = (workshop.durchfuehrungen ?? []).length;
+          const hasUpcomingDf = upcoming.length > 0;
 
           return (
             <Link
               key={workshop.id}
               href={`/workshops/${workshop.id}`}
-              className="group overflow-hidden rounded-lg border border-zinc-200 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+              className={CARD_LINK_CLASS}
             >
-              <div className="relative h-48 bg-zinc-100 dark:bg-zinc-800">
-                <Image
-                  src="/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg"
-                  alt={workshop.title}
-                  fill
-                  className="object-cover"
+              <div className="relative h-48 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                <div
+                  className={CARD_MEDIA_CLASS}
+                  style={{
+                    backgroundImage:
+                      "url('/placeholders/nano-banana-2_artistic_portrait_photography_of_A_cool-toned_artistic_portrait_photography_feat-3.jpg')",
+                  }}
                 />
-                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4">
-                  <h2 className="text-lg font-semibold text-white group-hover:underline">
+                {!hasUpcomingDf && (
+                  <span className="absolute top-0 left-0 z-10 rounded-br-md px-2.5 py-1 text-xs font-semibold text-white" style={{ backgroundColor: '#B8893A' }}>
+                    als Inhouse-Workshop verfügbar
+                  </span>
+                )}
+                <div className={CARD_TITLE_STRIP_CLASS}>
+                  <h2 className="block px-4 py-1.5 text-lg font-bold" style={{ color: '#3E5A6B' }}>
                     {workshop.title}
                   </h2>
-                  {workshop.subtitle && (
-                    <p className="mt-0.5 text-sm text-zinc-200">{workshop.subtitle}</p>
-                  )}
                 </div>
               </div>
               <div className="p-4">
+              {workshop.subtitle && (
+                <p className="text-base" style={{color:"#3E5A6B"}}>{workshop.subtitle}</p>
+              )}
               {nextTermin ? (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-base text-zinc-600 dark:text-zinc-400">
                   {formatDate(nextTermin.start_datetime)} |{" "}
                   {formatTime(nextTermin.start_datetime)} –{" "}
                   {formatTime(nextTermin.end_datetime)}
                 </p>
               ) : (
-                <p className="text-sm text-zinc-400">Keine kommenden Termine</p>
+                <p className="text-base text-zinc-400">voraussichtliche Durchführung {getNextQuarterLabel()}</p>
               )}
               <p className="mt-2 text-xs text-zinc-400">
                 {dfCount} Durchführung{dfCount !== 1 ? "en" : ""}
               </p>
-              <span className="mt-3 block rounded-md bg-teal-700 px-4 py-2 text-center text-sm font-medium text-white group-hover:bg-teal-800">
+              <span className="mt-3 block rounded-md px-4 py-2 text-center text-sm font-medium text-white" style={{backgroundColor:'#3E5A6B'}}>
                 Details
               </span>
               </div>

@@ -9,10 +9,10 @@ export function Header({ maxWidth = "max-w-6xl" }: { maxWidth?: string }) {
           <Image
             src="/logos/zweitsprache_logo.svg"
             alt="Zweitsprache"
-            width={35}
-            height={9}
+            width={36}
+            height={40}
             priority
-            style={{ width: 'auto', height: 'auto' }}
+            className="h-9 w-auto"
           />
         </Link>
         <nav className="flex gap-6">

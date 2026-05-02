@@ -8,6 +8,7 @@ export function EditWorkshopForm({
   title,
   subtitle,
   about,
+  minTeilnehmer,
   maxTeilnehmer,
   preis,
 }: {
@@ -15,6 +16,7 @@ export function EditWorkshopForm({
   title: string;
   subtitle?: string | null;
   about?: string | null;
+  minTeilnehmer?: number | null;
   maxTeilnehmer?: number | null;
   preis?: number | null;
 }) {
@@ -81,7 +83,23 @@ export function EditWorkshopForm({
             className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label
+              htmlFor="min_teilnehmer"
+              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              Min. Teilnehmer
+            </label>
+            <input
+              id="min_teilnehmer"
+              type="number"
+              name="min_teilnehmer"
+              min={1}
+              defaultValue={minTeilnehmer ?? ""}
+              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            />
+          </div>
           <div>
             <label
               htmlFor="max_teilnehmer"
@@ -93,7 +111,7 @@ export function EditWorkshopForm({
               id="max_teilnehmer"
               type="number"
               name="max_teilnehmer"
-              min={1}
+              min={0}
               defaultValue={maxTeilnehmer ?? ""}
               className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
             />

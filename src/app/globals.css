@@ -76,7 +76,7 @@ body:has([data-course-layout]) [data-slot="header-inner"] {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.277 0.046 192.524);
+  --primary: oklch(0.415 0.054 222);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);

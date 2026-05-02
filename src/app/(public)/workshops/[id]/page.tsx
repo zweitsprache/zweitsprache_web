@@ -59,6 +59,12 @@ export default async function WorkshopPublicPage({
         text,
         sort_order
       ),
+      workshop_stimmen (
+        id,
+        name,
+        text,
+        sort_order
+      ),
       durchfuehrungen (
         id,
         created_at,
@@ -87,6 +93,10 @@ export default async function WorkshopPublicPage({
   );
 
   const voraussetzungen = (workshop.voraussetzungen ?? []).sort(
+    (a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order
+  );
+
+  const stimmen = (workshop.workshop_stimmen ?? []).sort(
     (a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order
   );
 
@@ -139,7 +149,7 @@ export default async function WorkshopPublicPage({
       {workshop.about && (
         <div className="mb-10">
           <h2 className="mb-4 text-xl font-semibold">Über den Workshop</h2>
-          <p className="whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">{workshop.about}</p>
+          <p className="whitespace-pre-wrap text-base text-zinc-700 dark:text-zinc-300">{workshop.about}</p>
         </div>
       )}
       {lernziele.length > 0 && (
@@ -147,7 +157,7 @@ export default async function WorkshopPublicPage({
           <h2 className="mb-4 text-xl font-semibold">Lernziele</h2>
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {lernziele.map((lz: { id: string; text: string }) => (
-              <li key={lz.id} className="flex items-center gap-3 py-3 text-zinc-700 dark:text-zinc-300">
+              <li key={lz.id} className="flex items-center gap-3 py-3 text-base text-zinc-700 dark:text-zinc-300">
                 <ArrowRight className="h-4 w-4 shrink-0" />
                 {lz.text}
               </li>
@@ -160,7 +170,7 @@ export default async function WorkshopPublicPage({
           <h2 className="mb-4 text-xl font-semibold">Inhalte</h2>
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {inhalte.map((item: { id: string; text: string }) => (
-              <li key={item.id} className="flex items-center gap-3 py-3 text-zinc-700 dark:text-zinc-300">
+              <li key={item.id} className="flex items-center gap-3 py-3 text-base text-zinc-700 dark:text-zinc-300">
                 <ArrowRight className="h-4 w-4 shrink-0" />
                 {item.text}
               </li>
@@ -173,7 +183,7 @@ export default async function WorkshopPublicPage({
           <h2 className="mb-4 text-xl font-semibold">Voraussetzungen</h2>
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {voraussetzungen.map((item: { id: string; text: string }) => (
-              <li key={item.id} className="flex items-center gap-3 py-3 text-zinc-700 dark:text-zinc-300">
+              <li key={item.id} className="flex items-center gap-3 py-3 text-base text-zinc-700 dark:text-zinc-300">
                 <ArrowRight className="h-4 w-4 shrink-0" />
                 {item.text}
               </li>
@@ -265,7 +275,7 @@ export default async function WorkshopPublicPage({
                   <div className="mt-3">
                     <Link
                       href={`/workshops/${id}/anmelden/${df.id}`}
-                      className="inline-flex w-full items-center justify-center rounded-md bg-teal-700 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800"
+                      className="inline-flex w-full items-center justify-center rounded-md px-5 py-2 text-sm font-medium text-white transition-colors" style={{backgroundColor:'#3E5A6B'}}
                     >
                       Anmelden
                     </Link>
@@ -283,13 +293,27 @@ export default async function WorkshopPublicPage({
         </p>
         <Link
           href={`/workshops/${id}/anmelden/${durchfuehrungen[0]?.id ?? ''}`}
-          className="inline-flex w-full items-center justify-center rounded-md bg-teal-700 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800"
+          className="inline-flex w-full items-center justify-center rounded-md px-5 py-2 text-sm font-medium text-white transition-colors" style={{backgroundColor:'#3E5A6B'}}
         >
           Anfrage
         </Link>
       </div>
 
       <h2 className="mt-8 text-xl font-semibold">Teilnehmer:innen-Stimmen</h2>
+      {stimmen.length > 0 ? (
+        <div className="mt-4 flex flex-col gap-4">
+          {stimmen.map((stimme: { id: string; name: string | null; text: string }) => (
+            <div key={stimme.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+              <p className="text-base text-zinc-700 dark:text-zinc-300">{stimme.text}</p>
+              {stimme.name && (
+                <p className="mt-2 text-sm font-medium text-zinc-500">— {stimme.name}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-4 text-sm text-zinc-400">Noch keine Stimmen vorhanden.</p>
+      )}
         </div>
       </div>
     </div>

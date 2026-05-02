@@ -36,6 +36,7 @@ export default async function EditWorkshopPage({
         title={workshop.title}
         subtitle={workshop.subtitle}
         about={workshop.about}
+        minTeilnehmer={workshop.min_teilnehmer}
         maxTeilnehmer={workshop.max_teilnehmer}
         preis={workshop.preis}
       />
